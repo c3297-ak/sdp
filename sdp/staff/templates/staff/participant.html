@@ -1,82 +1,83 @@
 {% extends "courses/header.html" %}
 {% block content %}
 
-	<hr>
-	<p><b>View Course</b></p>
-	<div id="viewCourses">
-		<!-- To be completed -->
-	</div>
-	<script type="text/javascript">
-		console.log("Load Courses");
-		var endpoint = "http://localhost:8000/courses/";
-		var xmlHttp = new XMLHttpRequest();
-		xmlHttp.onreadystatechange = function() {
-		 	if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-		 		console.log(xmlHttp.responseText);
-		 		// Edit viewCourses div with xmlHttp.responseText (in json)
-		 	}
-		}
-		xmlHttp.open("GET", endpoint, true);
-		xmlHttp.send();
-	</script>
+    <hr>
+    <p><b>View Course</b></p>
+    <div id="viewCourses">
+        <!-- To be completed -->
+    </div>
+    <script type="text/javascript">
+        console.log("Load Courses");
+        var endpoint = "http://localhost:8000/courses/";
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                console.log(xmlHttp.responseText);
+                // Edit viewCourses div with xmlHttp.responseText (in json)
+            }
+        }
+        xmlHttp.open("GET", endpoint, true);
+        xmlHttp.send();
+    </script>
 
-	<hr>
-	<p><b>View Course Description</b></p>
-	<div id="courseDescription" >
-		<!-- To be completed -->
-	</div>
+    <hr>
+    <p><b>View Course Description</b></p>
+    <div id="courseDescription">
+        <!-- To be completed -->
+    </div>
 
-	<hr>
-	<p><b>View Course Description Form</b></p>
-	<form id="viewCourseDescriptionForm">
-		Course Code: <input type="text" name="courseCode" value="Course Code" > <br>
-	</form>
-	<button onclick="viewCourseDescription()">View Course Description</button>
-	<script>
-		function viewCourseDescription() {
-			var form = document.getElementById('viewCourseDescriptionForm');
-			var endpoint = "http://localhost:8000/courses/"+form.courseCode.value;
+    <hr>
+    <p><b>View Course Description Form</b></p>
+    <form id="viewCourseDescriptionForm">
+        Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
+        <button onclick="viewCourseDescription()">View Course Description</button>
+    </form>
 
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.onreadystatechange = function() {
-			 	if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-			 		console.log(xmlHttp.responseText);
-			 		// Edit viewModules div with xmlHttp.responseText (in json)
-			 	}
-			}
-			xmlHttp.open("GET", endpoint, true);
-			xmlHttp.send();
-		}
-	</script>
+    <script>
+        function viewCourseDescription() {
+            var form = document.getElementById('viewCourseDescriptionForm');
+            var endpoint = "http://localhost:8000/courses/" + form.courseCode.value;
 
-	<hr>
-	<p><b>View Enrollment</b></p>
-	<div id="viewEnrollment" >
-		<!-- To be completed -->
-	</div>
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    console.log(xmlHttp.responseText);
+                    // Edit viewModules div with xmlHttp.responseText (in json)
+                }
+            }
+            xmlHttp.open("GET", endpoint, true);
+            xmlHttp.send();
+        }
+    </script>
 
-	<hr>
-	<p><b>Add Enrollment</b></p>
-	<form id="addEnrollmentForm">
-		Course Code: <input type="text" name="courseCode" value="Course Code" > <br>
-		Participant: <input type="text" name="participant" value="Participant" > <br>
-	</form>
-	<button onclick="addComponent()">Add Component</button>
-	<script>
-		function addComponent() {
-			var form = document.getElementById('addEnrollmentForm');
-			var endpoint = "http://localhost:8000/courses/"+form.courseCode.value+"/enroll"+"?participant="+form.participant.value;
+    <hr>
+    <p><b>View Enrollment</b></p>
+    <div id="viewEnrollment">
+        <!-- To be completed -->
+    </div>
 
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.onreadystatechange = function() {
-			 	if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-			 		console.log(xmlHttp.responseText);
-			 		// Edit viewCompnents div with xmlHttp.responseText (in json)
-			 	}
-			}
-			xmlHttp.open("GET", endpoint, true);
-			xmlHttp.send();
-		}
-	</script>
+    <hr>
+    <p><b>Add Enrollment</b></p>
+    <form id="addEnrollmentForm">
+        Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
+        Participant: <input type="text" name="participant" value="Participant"> <br>
+    </form>
+    <button onclick="addComponent()">Add Component</button>
+    <script>
+        function addComponent() {
+            var form = document.getElementById('addEnrollmentForm');
+            var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/enroll" + "?participant=" + form.participant.value;
+
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                    console.log(xmlHttp.responseText);
+                    // Edit viewCompnents div with xmlHttp.responseText (in json)
+                }
+            }
+            xmlHttp.open("GET", endpoint, true);
+            xmlHttp.send();
+        }
+    </script>
 
 {% endblock %}

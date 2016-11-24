@@ -1,188 +1,295 @@
-from django.shortcuts import render, get_object_or_404
-from django.core import serializers
 from django.http import JsonResponse
-
+import json
+from django.forms.models import model_to_dict
 from .models import Module, Course, Enrollment, Component
 from staff.models import Instructor, Participant
+
+# Custom error messages
+ERR_COURSE_DOES_NOT_EXIST = {'failure': True, 'message': 'Course does not exist'}
+ERR_MOD_DOES_NOT_EXIST = {'failure': True, 'message': 'Module does not exist'}
+ERR_COMP_DOES_NOT_EXIST = {'failure': True, 'message': 'Component does not exist'}
+ERR_INSTRUCT_DOES_NOT_EXIST = {'failure': True, 'message': 'Instructor does not exist'}
+ERR_PARTICIPANT_DOES_NOT_EXIST = {'failure': True, 'message': 'Participant does not exist'}
+ERR_INTERNAL_ERROR = {'failure': True, 'message': 'Internal server error'}
+ERR_REQUIRED_FIELD_ABS = {'failure': True, 'message': 'All required fields are not present in POST data'}
+ERR_COMP_ORDER_EXISTS = {"failure": True, 'message': 'Component with the same order already exists'}
+ERR_MOD_ORDER_EXISTS = {"failure": True, 'message': 'Module with the same order already exists'}
+ERR_POST_EXPECTED = {'failure': True, 'message': 'Use POST request'}
+ERR_GET_EXPECTED = {'failure': True, 'message': 'Use GET request'}
+ERR_ALREADY_ENROLLED_ONE = {'failure': True, 'message': 'Already enrolled in one course'}
+ERR_ALREADY_ENROLLED_CURR = {'failure': True, 'message': 'Already enrolled in this course'}
+ERR_PARTICIPANT_INSTRUCT_SAME = {'failure': True, 'message': 'You cannot enroll in a course you created'}
+ERR_COURSE_NOT_PUBLISHED = {'failure': True, 'message': 'You cannot enroll in a course that is not published'}
+
+
+# helper function to check if course with courseCode exists
+def get_course(course_code):
+    courses = Course.objects.all().filter(courseCode=course_code)
+    if courses.count() > 0:
+        return courses[0]
+    return None
+
+
+def all_fields_present(data, field_lst):
+    for field in field_lst:
+        if field not in data:
+            return False
+    return True
+
 
 # Create your views here.
 
 def index(request):
-	# View all courses
-	# courses = Course.objects.all().filter(isPublished = True)
-	# return render(request, 'courses/courses.html', {'courses': courses})
-	courses = Course.objects.all()
-	coursesData = serializers.serialize('json', courses)
-	return JsonResponse(coursesData, safe=False)
+    try:
+        if request.method == 'GET':
+            courses = []
+            course_set = Course.objects.all();
+            if course_set.count() > 0:
+                for course in course_set:
+                    courses.append(model_to_dict(course))
+            return JsonResponse({"all_courses": courses})
+        else:
+            return JsonResponse(ERR_GET_EXPECTED)
+    except Exception as e:
+        print(e)
+        return JsonResponse(ERR_INTERNAL_ERROR)
+
 
 def addCourse(request):
+    # check if post request
+    # post data must contain courseCode, instructor(id), category, isPublished, title, description
+    if request.method == 'POST':
+        try:
+            # get request body and decode
+            decoded_body = request.body.decode('utf-8')
+            post_data = json.loads(decoded_body)
 
-	# Sourav -> Verify if courseCode already exits, return failure if true
+            # check for presence of all fields
+            if not all_fields_present(post_data, ['courseCode', 'instructor', 'category', 'isPublished',
+                                                  'title', 'description']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
 
-	course = Course(
-		instructor = request.GET['instructor'],
-		courseCode = request.GET['courseCode'],
-		category  = request.GET['category'],
-		isPublished = request.GET['isPublished'],
-		title = request.GET['title'],
-		description = request.GET['description'])
-	course.save()
+            course_code = post_data['courseCode']
+            # return failure if course already exists or if instructor does not exist
+            course = get_course(course_code)
+            if course:
+                return_data = {"failure": True, 'message': 'Course already exists'}
+            else:
+                instructor = Instructor.objects.all().filter(id=post_data['instructor'])
+                if instructor.count() == 0:
+                    return_data = ERR_INSTRUCT_DOES_NOT_EXIST
+                else:
+                    return_data = instructor[0].course_set.create(courseCode=course_code,
+                                                                  category=post_data['category'],
+                                                                  isPublished=post_data['isPublished'],
+                                                                  title=post_data['title'],
+                                                                  description=post_data['description'])
+                    # convert model to dict
+                    return_data = model_to_dict(return_data)
+        except Exception as e:
+            # unknown exception
+            print(e)
+            return_data = ERR_INTERNAL_ERROR
 
-	courses = Course.objects.all()
-	# courses = Course.objects.all().filter(courseCode = request.GET['courseCode'])[:1]
-	# courses = Course.objects.all().filter(isPublished = True)
-	coursesData = serializers.serialize('json', courses)
-	return JsonResponse(coursesData, safe=False)
-
-def addModule(request, course_id):
-
-	# # err if course does not exist
-	# try:
-	# 	course = Course.objects.get(pk = course_id)
-	# except Course.DoesNotExist:
-	# 	return render(request, 'courses/err.html', {'message': 'Course does not exist'})
-
-	# ## POST request
-	# ## Instructor id provided as post params. Check if course is created by course instructor
-	# try: 
-	# 	instructor = Instructor.objects.get(pk = request.POST['insID'])
-	# except Instructor.DoesNotExist:
-	# 	## display appropriate error message with authorization fails
-	# 	return render(request, 'courses/err.html', {'message': "Instructor with the ID does not exits"})
-
-	# isCourseInstructor = course.instructor == instructor.id
-
-	# if isCourseInstructor == False:
-	# 	return render(request, 'courses/err.html', {'message': 'You are not allowed to add modules to the course'})
-
-	# components = request.POST['components']
-	# module = Module.components_set.create(components)
-	# module.sequenceNumber = request.POST['sequenceNumber']
-	# module.course = course_id
-
-	# return render(request, 'courses/modules.html', {'module': module, 'isInstructor': isInstructor})
-
-	# Sourav -> Verify if courseCode exits, continue only if true
-
-	module = Module(
-		courseCode = course_id,
-		moduleTitle = request.GET['moduleTitle'],
-		sequenceNumber = request.GET['sequenceNumber'])
-	module.save()
-
-	modules = Module.objects.all().filter(courseCode = course_id).order_by('sequenceNumber')
-	modulesData = serializers.serialize('json', modules)
-	return JsonResponse(modulesData, safe=False)
-
-def addComponent(request, course_id, module_id):
-	
-	# try:
-	# 	course = Course.objects.get(pk = course_id)
-	# except Course.DoesNotExist:
-	# 	return render(request, 'courses/err.html', {'message': 'Course does not exit'})
+        # return json response
+        return JsonResponse(return_data, safe=False)
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 
-	# ## POST request
-	# ## Instructor id provided as post params. Check if course is created by course instructor
-	# try: 
-	# 	instructor = Instructor.objects.get(pk = request.POST['insID'])
-	# except Instructor.DoesNotExist:
-	# 	## display appropriate error message with authorization fails
-	# 	return render(request, 'courses/err.html', {'message': "Instructor with the ID does not exits"})
-
-	# isCourseInstructor = course.instructor == instructor.id
-
-	# if isCourseInstructor == False:
-	# 	return render(request, 'courses/err.html', {'message': 'You are not allowed to add modules to the course'})
-
-
-	# ## get module. Display err if module not present
-	# try:
-	# 	module = Module.objects.get(pk = module_id)
-	# except Module.DoesNotExist:
-	# 	return render(request, 'courses/err.html', {'message': 'Module does not '})
-
-	# component = Component(module=module_id,order =request.POST['order'], 
-	# 	contentType=request.POST['contentType'], content=request.POST['content'])
-	# component.save()
-
-	# return render(request, 'courses/module_details.html', {'module': module})
-
-	# Sourav -> Verify if courseCode and moudule exits, continue only if true
-
-	component = Component(
-		courseCode = course_id,
-		moduleTitle = module_id,
-		order = request.GET['order'], 
-		contentType = request.GET['contentType'],
-		content = request.GET['content'],
-		contentTitle = request.GET['contentTitle'])
-	component.save()
-
-	components = Component.objects.all().filter(courseCode = course_id).filter(moduleTitle = module_id).order_by('order')
-	componentsData = serializers.serialize('json', components)
-	return JsonResponse(componentsData, safe=False)
-
-def publishCourse(request, course_id):
-	## POST request
-	## Instructor id provided as post params. Check if course is created by course instructor
-	try: 
-		instructor = Instructor.objects.get(pk = request.POST['insID'])
-	except Instructor.DoesNotExist:
-		## display appropriate error message with authorization fails
-		return render(request, 'courses/err.html', {'message': "Instructor with the ID does not exits"})
+def courseDescription(request, course_code):
+    # get course associated. Return failure if none. Else return the course
+    try:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            return_data = model_to_dict(course)  # general course data outer body
+            instructor_info = {"username": course.instructor.username}
+            return_data['instructor_info'] = instructor_info
+            module_data = []  # will contain the list of modules
+            module_set = course.module_set
+            return_data['module_count'] = module_set.count()
+            for module in module_set.all():  # for each module get the list of components
+                module_dict = model_to_dict(module)
+                component_set = module.component_set
+                module_dict['component_count'] = component_set.count()
+                components = []
+                for component in component_set.all():
+                    components.append(model_to_dict(component))
+                module_dict['components'] = components
+                module_data.append(module_dict)  # append module info to module data list
+            return_data['modules'] = module_data  # list of all modules for the course
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
 
 
-	## appropriate error message if course does not exist
-	try:
-		course = Course.objects.get(pk = course_id)
-	except Course.DoesNotExist:
-		return render(request, 'courses/err.html', {'message': 'Course does not exit'})
+def publishCourse(request, course_code):
+    # get course associated, return err if does not exist. Set isPublished and save
+    # return updated course
+    if request.method == 'POST':
+        try:
+            course = get_course(course_code)
+            if not course:
+                return_data = ERR_COURSE_DOES_NOT_EXIST
+            else:
+                if not course.isPublished:
+                    course.isPublished = True
+                    course.save()
+                    return_data = model_to_dict(course)
+        except Exception as e:
+            print(e)
+            return_data = ERR_INTERNAL_ERROR
+    else:
+        return_data = ERR_POST_EXPECTED
+    return JsonResponse(return_data)
 
-	course.isPublished = True
-	course.save()
-	return render(request, 'courses/course_details.html', {'course': course})
 
-def courseDescription(request, course_id):
-	# course = get_object_or_404(Course, pk = course_id)
-	# ## Instructor id provided as get params. Check if course is created by course instructor
-	# try: 
-	# 	instructor = Instructor.objects.get(pk = request.GET['insID'])
-	# except Instructor.DoesNotExist:
-	# 	## display appropriate error message with authorization fails
-	# 	return render(request, 'courses/err.html', {'message': "Instructor with the ID does not exits"})
+def addModule(request, course_code):
+    # post data must have moduleTitle, sequenceNumber
+    try:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            post_data = json.loads(request.body.decode('utf-8'))  # get the post data
 
-	# isCourseInstructor = course.instructor == instructor.id 
-	# ## show appropriate course description page depending on whether participant or instructor
-	# return render(request, 'courses/course_description.html', {'course': course, 'isCourseInstructor': isCourseInstructor})
-	course = Course.objects.all().filter(courseCode = course_id)
-	courseData = serializers.serialize('json', course)
-	return JsonResponse(courseData, safe=False)
+            # check all fields present
+            if not all_fields_present(post_data, ['moduleTitle', 'sequenceNumber']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
 
-def enroll(request, course_id):
-	# ##POST request
-	# #check if parID specified exist
-	# try:
-	# 	participant = Participant.objects.get(pk = request.POST['parID'])
-	# except Participant.DoesNotExist:
-	# 	# err if participant does not exist
-	# 	return render(request, 'courses/err.html', {'message': 'Participant with the id does not exist'})
+            # make sure there is no module with the sequence number specified
+            already_exist_mod_seq = course.module_set.filter(sequenceNumber=post_data['sequenceNumber']).count() > 0
+            if already_exist_mod_seq:
+                return JsonResponse(ERR_MOD_ORDER_EXISTS)
 
-	# # err if course does not exist
-	# try:
-	# 	course = Course.objects.get(pk = course_id)
-	# except Course.DoesNotExist:
-	# 	return render(request, 'courses/err.html', {'message': 'Course does not exit'})
+            module = course.module_set.create(moduleTitle=post_data['moduleTitle'],
+                                              sequenceNumber=post_data['sequenceNumber'])
+            return_data = model_to_dict(module)  # create module and set the return_data to new module created
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)  # ask AK what to return
 
-	# enroll = Enrollment(course=course_id, participant_id=participant.id)
-	# return render(request, 'staff/course_description.html', {'course': course})
 
-	enrollment = Enrollment(
-		isCompleted = False,
-		courseCode = course_id,
-		participant = request.GET['participant'])
-	enrollment.save()
+def addComponent(request, course_code, module_seq):
+    module_seq = int(module_seq)
+    # POST data must contain order, contentType, content, contentTitle
+    try:
+        # get the post data
+        post_data = json.loads(request.body.decode('utf-8'))
 
-	enrollments = Enrollment.objects.all()
-	enrollmentsData = serializers.serialize('json', enrollments)
-	return JsonResponse(enrollmentsData, safe=False)
+        if not all_fields_present(post_data, ['order', 'contentType', 'content', 'contentTitle']):
+            return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+        course = get_course(course_code)  # get the course associated, return failure if none
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            # get the module with the sequence number
+            if module_seq > course.module_set.count():
+                return_data = ERR_MOD_DOES_NOT_EXIST
+            else:
+                # add component and return newly created component
+                module = course.module_set.filter(sequenceNumber=module_seq)[0]
+
+                # return failure if same order already exists
+                if module.component_set.filter(order=post_data['order']).count() > 0:
+                    return JsonResponse(ERR_COMP_ORDER_EXISTS)
+
+                component = module.component_set.create(order=post_data['order'],
+                                                        contentType=post_data['contentType'],
+                                                        content=post_data['content'],
+                                                        contentTitle=post_data['contentTitle'])
+                if component:
+                    return_data = model_to_dict(component)
+                else:
+                    return_data = {'failure': True, 'message': 'Component could not be created'}
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+
+def enroll(request, course_code):
+    # get participant and course associated. Return failure if either does not exist
+    # Otherwise create enrollment and return newly created enrollment record
+    # POST data must contain participant_id
+
+    try:
+        post_data = json.loads(request.body.decode('utf-8'))
+
+        if not all_fields_present(post_data, ['participant_id']):
+            return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+        course = get_course(course_code)
+        participant_id = int(post_data['participant_id'])
+        participant = Participant.objects.filter(id=participant_id)  # get participant id from post data
+
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        elif participant.count() == 0:
+            return_data = ERR_PARTICIPANT_DOES_NOT_EXIST
+        elif not course.isPublished:
+            return_data = ERR_COURSE_NOT_PUBLISHED  # check if course published
+        elif Enrollment.objects.filter(participant_id=participant_id, isCompleted=False).count() > 0:
+            # already in one course
+            if Enrollment.objects.filter(participant_id=participant_id)[0].course.courseCode == course.courseCode:
+                return_data = ERR_ALREADY_ENROLLED_CURR
+            else:
+                return_data = ERR_ALREADY_ENROLLED_ONE
+        elif participant_id == course.instructor.id:
+            # cannot enroll in the same course created
+            return_data = ERR_PARTICIPANT_INSTRUCT_SAME
+        else:
+            enrollment = Enrollment()
+            enrollment.course = course
+            enrollment.participant = participant[0]
+            enrollment.save()
+            return_data = model_to_dict(enrollment)
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+
+def get_enrolled_participants(request, course_code):
+    try:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            enrollments = Enrollment.objects.filter(course__courseCode=course_code)
+            all_enrolls = []
+            for enrollment in enrollments:
+                participant = Participant.objects.get(id=enrollment.participant.id)
+                enrollment = model_to_dict(enrollment)
+                enrollment['participant_info'] = {'username': participant.username}
+                all_enrolls.append(enrollment)
+            return_data = {'all_enrolls': all_enrolls}
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+
+def get_completed_participants(request, course_code):
+    try:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            enrollments = Enrollment.objects.filter(course__courseCode=course_code, isCompleted=True)
+            completed_enrolls = []
+            for enrollment in enrollments:
+                participant = Participant.objects.get(id=enrollment.participant.id)
+                enrollment = model_to_dict(enrollment)
+                enrollment['participant_info'] = {'username': participant.username}
+                completed_enrolls.append(enrollment)
+            return_data = {'completed_enrolls': completed_enrolls}
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)

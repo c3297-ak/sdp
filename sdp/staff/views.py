@@ -1,14 +1,17 @@
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
+from .models import Instructor, Participant
 
-# from django.shortcuts import render, get_object_or_404
-# from django.core import serializers
-# from django.http import JsonResponse
 
-# from .models import Instructor, Participant
-# from courses.models import Module, Course, Enrollment, Component
+def all_instructors(request):
+    instructors = []
+    for instructor in Instructor.objects.all():
+        instructors.append(model_to_dict(instructor))
+    return JsonResponse({'all_instructors': instructors})
 
-def instructor(request):
-	return render(request, 'staff/instructor.html')
 
-def participant(request):
-	return render(request, 'staff/participant.html')
+def all_participants(request):
+    participants = []
+    for participant in Participant.objects.all():
+        participants.append(model_to_dict(participant))
+    return JsonResponse({'all_participants': participants})

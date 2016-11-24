@@ -1,0 +1,26 @@
+Add course:
+{
+	"courseCode": "M123",
+	"instructor": 1,
+	"category": "Maths",
+	"isPublished" : false,
+	"title": "Discrete",
+	"description": "Take if you wish an early death"
+}
+
+Add module:
+
+{
+	"moduleTitle": "My third created module",
+	"sequenceNumber": 3
+}
+
+
+Add component:
+{
+	"order": 1,
+	"contentType": "Text",
+	"content": "BlahBlahBlah",
+	"contentTitle": "Week 1"
+}
+
