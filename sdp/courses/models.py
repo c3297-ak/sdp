@@ -6,14 +6,14 @@ from django.db import models
 
 # Create your models here.
 # change 1 -
-from staff.models import Instructor, Participant
+from staff.models import Staff
 
 
 # from staff.models import Participant, Instructor
 
 
 class Course(models.Model):
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
+    instructor = models.ForeignKey(Staff, on_delete=models.CASCADE)
     courseCode = models.CharField(max_length=200)
     category = models.CharField(max_length=200)
     isPublished = models.BooleanField(default=False)
@@ -47,7 +47,8 @@ class Component(models.Model):
 class Enrollment(models.Model):
     isCompleted = models.BooleanField(default=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    participant = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    last_module_completed = models.IntegerField(default=0)
 
     def __str__(self):
         return 'Course: ' + self.course.courseCode + ", Participant: " + self.participant.username

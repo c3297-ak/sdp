@@ -2,24 +2,8 @@ from django.http import JsonResponse
 import json
 from django.forms.models import model_to_dict
 from .models import Module, Course, Enrollment, Component
-from staff.models import Instructor, Participant
-
-# Custom error messages
-ERR_COURSE_DOES_NOT_EXIST = {'failure': True, 'message': 'Course does not exist'}
-ERR_MOD_DOES_NOT_EXIST = {'failure': True, 'message': 'Module does not exist'}
-ERR_COMP_DOES_NOT_EXIST = {'failure': True, 'message': 'Component does not exist'}
-ERR_INSTRUCT_DOES_NOT_EXIST = {'failure': True, 'message': 'Instructor does not exist'}
-ERR_PARTICIPANT_DOES_NOT_EXIST = {'failure': True, 'message': 'Participant does not exist'}
-ERR_INTERNAL_ERROR = {'failure': True, 'message': 'Internal server error'}
-ERR_REQUIRED_FIELD_ABS = {'failure': True, 'message': 'All required fields are not present in POST data'}
-ERR_COMP_ORDER_EXISTS = {"failure": True, 'message': 'Component with the same order already exists'}
-ERR_MOD_ORDER_EXISTS = {"failure": True, 'message': 'Module with the same order already exists'}
-ERR_POST_EXPECTED = {'failure': True, 'message': 'Use POST request'}
-ERR_GET_EXPECTED = {'failure': True, 'message': 'Use GET request'}
-ERR_ALREADY_ENROLLED_ONE = {'failure': True, 'message': 'Already enrolled in one course'}
-ERR_ALREADY_ENROLLED_CURR = {'failure': True, 'message': 'Already enrolled in this course'}
-ERR_PARTICIPANT_INSTRUCT_SAME = {'failure': True, 'message': 'You cannot enroll in a course you created'}
-ERR_COURSE_NOT_PUBLISHED = {'failure': True, 'message': 'You cannot enroll in a course that is not published'}
+from staff.models import Staff
+from sdp.utilities import *
 
 
 # helper function to check if course with courseCode exists
@@ -28,13 +12,6 @@ def get_course(course_code):
     if courses.count() > 0:
         return courses[0]
     return None
-
-
-def all_fields_present(data, field_lst):
-    for field in field_lst:
-        if field not in data:
-            return False
-    return True
 
 
 # Create your views here.
@@ -75,17 +52,22 @@ def addCourse(request):
             if course:
                 return_data = {"failure": True, 'message': 'Course already exists'}
             else:
-                instructor = Instructor.objects.all().filter(id=post_data['instructor'])
-                if instructor.count() == 0:
-                    return_data = ERR_INSTRUCT_DOES_NOT_EXIST
+                # check if staff with the id exists
+                staff = Staff.objects.filter(id=post_data['instructor'])
+                if staff.count() == 0:
+                    return_data = ERR_STAFF_DOES_NOT_EXIST
                 else:
-                    return_data = instructor[0].course_set.create(courseCode=course_code,
-                                                                  category=post_data['category'],
-                                                                  isPublished=post_data['isPublished'],
-                                                                  title=post_data['title'],
-                                                                  description=post_data['description'])
-                    # convert model to dict
-                    return_data = model_to_dict(return_data)
+                    # check if instructor permission assigned
+                    if staff[0].instructor_set.count() == 0:
+                        return_data = ERR_NO_INSTRUCTOR_PERMISSION
+                    else:
+                        return_data = staff[0].course_set.create(courseCode=course_code,
+                                                                 category=post_data['category'],
+                                                                 isPublished=post_data['isPublished'],
+                                                                 title=post_data['title'],
+                                                                 description=post_data['description'])
+                        # convert model to dict
+                        return_data = model_to_dict(return_data)
         except Exception as e:
             # unknown exception
             print(e)
@@ -216,37 +198,37 @@ def addComponent(request, course_code, module_seq):
 def enroll(request, course_code):
     # get participant and course associated. Return failure if either does not exist
     # Otherwise create enrollment and return newly created enrollment record
-    # POST data must contain participant_id
+    # POST data must contain staff_id
 
     try:
         post_data = json.loads(request.body.decode('utf-8'))
 
-        if not all_fields_present(post_data, ['participant_id']):
+        if not all_fields_present(post_data, ['staff_id']):
             return JsonResponse(ERR_REQUIRED_FIELD_ABS)
 
         course = get_course(course_code)
-        participant_id = int(post_data['participant_id'])
-        participant = Participant.objects.filter(id=participant_id)  # get participant id from post data
+        staff_id = int(post_data['staff_id'])
+        staff = Staff.objects.filter(id=staff_id)  # get participant id from post data
 
         if not course:
             return_data = ERR_COURSE_DOES_NOT_EXIST
-        elif participant.count() == 0:
-            return_data = ERR_PARTICIPANT_DOES_NOT_EXIST
+        elif staff.count() == 0:
+            return_data = ERR_STAFF_DOES_NOT_EXIST
         elif not course.isPublished:
             return_data = ERR_COURSE_NOT_PUBLISHED  # check if course published
-        elif Enrollment.objects.filter(participant_id=participant_id, isCompleted=False).count() > 0:
+        elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0:
             # already in one course
-            if Enrollment.objects.filter(participant_id=participant_id)[0].course.courseCode == course.courseCode:
+            if Enrollment.objects.filter(participant_id=staff_id)[0].course.courseCode == course.courseCode:
                 return_data = ERR_ALREADY_ENROLLED_CURR
             else:
                 return_data = ERR_ALREADY_ENROLLED_ONE
-        elif participant_id == course.instructor.id:
+        elif staff_id == course.instructor.id:
             # cannot enroll in the same course created
             return_data = ERR_PARTICIPANT_INSTRUCT_SAME
         else:
             enrollment = Enrollment()
             enrollment.course = course
-            enrollment.participant = participant[0]
+            enrollment.participant = staff[0]
             enrollment.save()
             return_data = model_to_dict(enrollment)
     except Exception as e:
@@ -264,7 +246,7 @@ def get_enrolled_participants(request, course_code):
             enrollments = Enrollment.objects.filter(course__courseCode=course_code)
             all_enrolls = []
             for enrollment in enrollments:
-                participant = Participant.objects.get(id=enrollment.participant.id)
+                participant = Staff.objects.get(id=enrollment.participant.id)
                 enrollment = model_to_dict(enrollment)
                 enrollment['participant_info'] = {'username': participant.username}
                 all_enrolls.append(enrollment)
@@ -284,7 +266,7 @@ def get_completed_participants(request, course_code):
             enrollments = Enrollment.objects.filter(course__courseCode=course_code, isCompleted=True)
             completed_enrolls = []
             for enrollment in enrollments:
-                participant = Participant.objects.get(id=enrollment.participant.id)
+                participant = Staff.objects.get(id=enrollment.participant.id)
                 enrollment = model_to_dict(enrollment)
                 enrollment['participant_info'] = {'username': participant.username}
                 completed_enrolls.append(enrollment)

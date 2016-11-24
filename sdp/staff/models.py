@@ -11,11 +11,28 @@ class Staff(models.Model):
         return self.username
 
 
-class Participant(Staff):
-    def __str__(self):
-        return "Participant: " + self.username
+class Permission(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract=True
 
 
-class Instructor(Staff):
+class Participant(Permission):
     def __str__(self):
-        return 'Instructor: ' + self.username
+        return 'Participant permission'
+
+
+class Instructor(Permission):
+    def __str__(self):
+        return 'Instructor permission: '
+
+
+class Administrator(Permission):
+    def __str__(self):
+        return 'Administrator permission'
+
+
+class HumanResources(Permission):
+    def __str__(self):
+        return 'HR permission'

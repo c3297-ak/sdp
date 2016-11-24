@@ -4,11 +4,12 @@ from . import views
 app_name = 'staff'
 
 urlpatterns = [
-    # Note: need to add <instructor_id> to allow multiple instructors
+    # staff/create
+    url(r'^create', views.create_staff, name='create_staff'),
     # staff/instructor
     url(r'^instructors$', views.all_instructors, name='all_instructors'),
-
-    # Note: need to add <participant_id> to allow multiple participants
+    # staff/assign_instructor
+    url(r'^assign_instructor$', views.assign_instructor_permission, name='assign_instructor'),
     # staff/participant
     url(r'^participants$', views.all_participants, name='all_participant')
 ]
