@@ -4,6 +4,9 @@ from django.forms.models import model_to_dict
 from .models import Module, Course, Enrollment, Component
 from staff.models import Staff
 from sdp.utilities import *
+import os
+
+base_upload_path = './uploads/'
 
 
 # helper function to check if course with courseCode exists
@@ -156,6 +159,63 @@ def addModule(request, course_code):
     return JsonResponse(return_data)  # ask AK what to return
 
 
+def update_module_order(request, course_code):
+    # POST data must contain module_sequences attribute
+    # module_sequences is an array of objects, each with id (module's id) and sequenceNumber
+    # frontend check must be performed to ensure there are no modules with duplicate sequenceNumber
+
+    post_data = json.loads(request.body.decode('utf-8'))
+    updated = []
+    if not all_fields_present(post_data, ['module_sequences']):
+        return_data = ERR_REQUIRED_FIELD_ABS
+    else:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            for obj in post_data['module_sequences']:
+                module = course.module_set.filter(id=obj.id)[0]  # assumption: you will pass in the right module id
+                if module.count() > 0:
+                    module = module[0]
+                    module.sequenceNumber = obj.sequencNumber
+                    module.save()
+                    updated.append(model_to_dict(module))
+            return_data = {'updated_modules': updated}
+
+    return JsonResponse(return_data)
+
+
+def update_component_order(request, course_code, module_seq):
+    # POST data must contain component_sequences attribute
+    # component_sequences is an array of objects, each with id (module's id) and order
+    # frontend check must be performed to ensure there are no component with duplicate order
+
+    post_data = json.loads(request.body.decode('utf-8'))
+    updated = []
+    if not all_fields_present(post_data, ['component_sequences']):
+        return_data = ERR_REQUIRED_FIELD_ABS
+    else:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            module = course.module_set.filter(id=module_seq)
+            if module.count() == 0:
+                return_data = ERR_MOD_DOES_NOT_EXIST
+            else:
+                module = module[0]  # get the first element
+                for obj in post_data['component_sequences']:
+                    component = module.component_set.filter(id=obj.id)[0]
+                    if component.count() > 0:
+                        component = component[0]
+                        component.order = obj.order
+                        component.save()
+                        updated.append(model_to_dict(component))
+                return_data = {'updated_components': updated}
+
+    return JsonResponse(return_data)
+
+
 def addComponent(request, course_code, module_seq):
     module_seq = int(module_seq)
     # POST data must contain order, contentType, content, contentTitle
@@ -274,4 +334,31 @@ def get_completed_participants(request, course_code):
     except Exception as e:
         print(e)
         return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+
+def upload_component(request, course_code, module_seq):
+    if request.method == 'POST':
+        path = base_upload_path + str(course_code) + '/' + str(module_seq) + '/' + request.FILES['upload'].name
+        f = request.FILES['upload']
+        destination = open(path, 'wb+')
+        for chunk in f.chunks():
+            destination.write(chunk)
+        destination.close()
+        return_data = {'success': True, 'file_path': path}
+    else:
+        return_data = ERR_POST_EXPECTED
+    return JsonResponse(return_data)
+
+
+def remove_component(request):
+    if request.method == 'POST':
+        post_data = json.loads(request.body.decode('utf-8'))
+        if not all_fields_present(post_data, ['courseCode', 'module_seq', 'filename']):
+            return_data = ERR_REQUIRED_FIELD_ABS
+        else:
+            path = base_upload_path + post_data['courseCode'] + '/' + post_data['module_seq'] + '/' + post_data[
+                'filename']
+            os.remove(path)
+            return_data = {'success': True}
     return JsonResponse(return_data)

@@ -21,6 +21,12 @@ urlpatterns = [
     url(r'^(?P<course_code>[a-zA-Z0-9]+)/enroll$', views.enroll, name='enroll'),
     url(r'^(?P<course_code>[a-zA-Z0-9]+)/publish', views.publishCourse, name='publish'),
     url(r'^(?P<course_code>[a-zA-Z0-9]+)/enrolled', views.get_enrolled_participants, name='get_enrolled'),
-    url(r'^(?P<course_code>[a-zA-Z0-9]+)/completed', views.get_completed_participants, name='get_completed')
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/completed', views.get_completed_participants, name='get_completed'),
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/updatedModuleOrder$', views.update_module_order, name='updatedModuleOrder$'),
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/updatedComponentOrder$',
+        views.update_module_order, name='updatedComponentOrder$'),
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/upload$',
+        views.upload_component, name='upload_component'),
+    url(r'^/remove$', views.remove_component, name='remove_component'),
 
 ]
