@@ -1,0 +1,96 @@
+{% extends "staff/header.html" %}
+{% block content %}
+    <p><b>Login</b></p>
+    <form id="login">
+        Username: <input type="text" name="username" value="username"> <br>
+        Password: <input type="text" name="password" value="password"> <br>
+        <button type="button" onclick="login()"> Login </button>
+        <span id="loginStatus"></span>
+    </form>
+    <script type="text/javascript">
+        function login() {
+        	var form = document.getElementById('login');
+        	if (form.username.value != "" && form.password.value != "") {
+	            var endpoint = "http://localhost:8000/staff/login";
+	            var data = {
+	                username: form.username.value,
+	                password: form.password.value,
+	            };
+
+	            var xmlHttp = new XMLHttpRequest();
+	            xmlHttp.onreadystatechange = function () {
+	                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+	                    response = JSON.parse(xmlHttp.responseText);
+	                    if (response.failure == null && form.username.value != "" && form.password.value != "") {
+	                        var status = document.getElementById('loginStatus');
+	                        status.innerHTML = "";
+	                        document.cookie = "staffId="+response.staffId+";path=/";
+	                        window.location.href = "home";
+	                    } else {
+	                    	form.username.value = "username";
+	                    	form.password.value = "password";
+	                        var status = document.getElementById('loginStatus');
+	                        status.innerHTML = " Login Fail";
+	                    }
+	                }
+	            }
+	            xmlHttp.open("POST", endpoint, true);
+	            xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
+	            xmlHttp.send(JSON.stringify(data));
+	            return false;
+	        } else {
+	        	form.username.value = "username";
+            	form.password.value = "password";
+                var status = document.getElementById('loginStatus');
+                status.innerHTML = " Login Fail";
+	        }
+        }
+    </script>
+    <hr>
+    <p><b>Register</b></p>
+    <form id="register">
+        Username: <input type="text" name="username" value="username"> <br>
+        Password: <input type="text" name="password" value="password"> <br>
+        <button type="button" onclick="register()"> Register </button>
+        <span id="registerStatus"></span>
+    </form>
+    <script type="text/javascript">
+        function register() {
+		    var form = document.getElementById('register');
+        	if (form.username.value != "" && form.password.value != "" && form.username.value != "username" && form.password.value != "password") {
+		        var endpoint = "http://localhost:8000/staff/register";
+		        var data = {
+		            username: form.username.value,
+		            password: form.password.value,
+		        };
+
+		        var xmlHttp = new XMLHttpRequest();
+		        xmlHttp.onreadystatechange = function () {
+		            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+		                response = JSON.parse(xmlHttp.responseText);
+		                if (response.failure == null) {
+		                    var status = document.getElementById('registerStatus');
+		                    status.innerHTML = "";
+		                    document.cookie = "staffId="+response.id+";path=/";
+		                    window.location.href = "home";
+		                } else {
+		                	form.username.value = "username";
+		                	form.password.value = "password";
+		                    var status = document.getElementById('registerStatus');
+		                    status.innerHTML = " Register Fail";
+		                }
+		            }
+		        }
+		        xmlHttp.open("POST", endpoint, true);
+		        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
+		        xmlHttp.send(JSON.stringify(data));
+		        return false;
+        	} else {
+            	form.username.value = "username";
+            	form.password.value = "password";
+                var status = document.getElementById('registerStatus');
+                status.innerHTML = " Register Fail";
+            }
+        }
+    </script>
+{% endblock %}

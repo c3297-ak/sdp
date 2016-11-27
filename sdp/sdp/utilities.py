@@ -5,6 +5,7 @@ ERR_COMP_DOES_NOT_EXIST = {'failure': True, 'message': 'Component does not exist
 ERR_NO_INSTRUCTOR_PERMISSION = {'failure': True, 'message': 'Instructor permission not assigned'}
 ERR_PARTICIPANT_DOES_NOT_EXIST = {'failure': True, 'message': 'Participant does not exist'}
 ERR_STAFF_DOES_NOT_EXIST = {'failure': True, 'message': 'Staff does not exist'}
+ERR_STAFF_ALREADY_EXIST = {'failure': True, 'message': 'Staff already exist'}
 ERR_INTERNAL_ERROR = {'failure': True, 'message': 'Internal server error'}
 ERR_REQUIRED_FIELD_ABS = {'failure': True, 'message': 'All required fields are not present in POST data'}
 ERR_COMP_ORDER_EXISTS = {"failure": True, 'message': 'Component with the same order already exists'}

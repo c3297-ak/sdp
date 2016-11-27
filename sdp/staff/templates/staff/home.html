@@ -1,0 +1,85 @@
+{% extends "staff/header.html" %}
+{% block content %}
+
+	<script type="text/javascript">
+	    function getCookie(cname) {
+		    var name = cname + "=";
+		    var ca = document.cookie.split(';');
+		    for(var i = 0; i <ca.length; i++) {
+		        var c = ca[i];
+		        while (c.charAt(0)==' ') {
+		            c = c.substring(1);
+		        }
+		        if (c.indexOf(name) == 0) {
+		            return c.substring(name.length,c.length);
+		        }
+		    }
+		    return "";
+		}
+		if (getCookie("staffId") == "") {
+			window.location.href = "loginPage";
+		}
+	</script>
+
+    <div id="permissionButtons" style="text-align: center;"><button onClick="logout()"> Log Out</button></div>
+
+    <hr>
+    
+    <div id="mainDisplay"></div>
+
+    <script type="text/javascript">
+		staffId = getCookie('staffId');
+
+		// Get permission for participant
+		/*$.get("http://localhost:8000/staff/participants",function(data, status){
+    		list = data.all_participants;
+    		for(var i in list) {
+    			if (list[i].id == staffId) {
+    				$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
+			    }
+    		}
+    	});*/
+
+    	$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
+    	updateDisplay("participant");
+
+		// Get permission for instructor
+    	$.get("http://localhost:8000/staff/instructors",function(data, status){
+    		list = data.all_instructors;
+    		for(var i in list) {
+    			if (list[i].id == staffId) {
+    				$("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
+			    }
+    		}
+    	});
+
+    	// Get permission for admin
+    	$.get("http://localhost:8000/staff/administrators",function(data, status){
+    		list = data.all_administrators
+    		for(var i in list) {
+    			if (list[i].id == staffId) {
+			    	$("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
+			    }
+    		}
+    	});
+
+    	// Get permission for hr
+    	$.get("http://localhost:8000/staff/humanResources",function(data, status){
+    		list = data.all_humanResources
+    		for(var i in list) {
+    			if (list[i].id == staffId) {
+			    	$("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
+			    }
+    		}
+    	});
+
+    	function logout() {
+    		document.cookie = "staffId="+";expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/";
+    		window.location.href = "loginPage";
+    	}
+    	function updateDisplay(userMode) {
+    		document.getElementById("mainDisplay").innerHTML='<object type="text/html" data="'+userMode+'" width="100%" height="600px"></object>';
+    	}
+    </script>
+
+{% endblock %}
