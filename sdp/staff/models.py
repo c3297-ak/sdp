@@ -25,7 +25,7 @@ class Participant(Permission):
 
 class Instructor(Permission):
     def __str__(self):
-        return 'Instructor permission: '
+        return 'Instructor permission'
 
 
 class Administrator(Permission):
@@ -33,6 +33,6 @@ class Administrator(Permission):
         return 'Administrator permission'
 
 
-class HumanResources(Permission):
+class HumanResource(Permission):
     def __str__(self):
         return 'HR permission'
