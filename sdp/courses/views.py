@@ -362,3 +362,16 @@ def remove_component(request):
             os.remove(path)
             return_data = {'success': True}
     return JsonResponse(return_data)
+
+
+def update_course_progress(request):
+    if request.method == 'POST':
+        post_data = json.loads(request.body.decode('utf-8'))
+        if not all_fields_present(post_data, ['courseCode', 'module_seq', 'filename']):
+            return_data = ERR_REQUIRED_FIELD_ABS
+        else:
+            path = base_upload_path + post_data['courseCode'] + '/' + post_data['module_seq'] + '/' + post_data[
+                'filename']
+            os.remove(path)
+            return_data = {'success': True}
+    return JsonResponse(return_data)

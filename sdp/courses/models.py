@@ -7,6 +7,7 @@ from django.db import models
 # Create your models here.
 # change 1 -
 from staff.models import Staff
+from sdp.utilities import *
 
 
 # from staff.models import Participant, Instructor
@@ -41,14 +42,42 @@ class Component(models.Model):
     contentTitle = models.CharField(max_length=200)
 
     def __str__(self):
-        return 'Module: ' + self.module.moduleTitle + ', order: ' + str(self.order)
+        return 'Component: ' + self.module.moduleTitle + ', order: ' + str(self.order)
+
+    class Meta:
+        abstract = True
+        ordering = ['order']
+
+
+class TextComponent(Component):
+    contentType = TEXT
+    content = models.TextField()
+
+    def __str__(self):
+        return 'Text component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
+
+
+class FileComponent(Component):
+    contentType = FILE
+    content = models.FileField()
+
+    def __str__(self):
+        return 'File component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
+
+
+class ImageComponent(Component):
+    contentType = FILE
+    content = models.ImageField()
+
+    def __str__(self):
+        return 'Image component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
 
 
 class Enrollment(models.Model):
     isCompleted = models.BooleanField(default=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     participant = models.ForeignKey(Staff, on_delete=models.CASCADE)
-    last_module_completed = models.IntegerField(default=0)
+    modules_completed = models.IntegerField(default=0)
 
     def __str__(self):
         return 'Course: ' + self.course.courseCode + ", Participant: " + self.participant.username

@@ -27,6 +27,7 @@ urlpatterns = [
         views.update_module_order, name='updatedComponentOrder$'),
     url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/upload$',
         views.upload_component, name='upload_component'),
-    url(r'^/remove$', views.remove_component, name='remove_component'),
+    url(r'^remove$', views.remove_component, name='remove_component'),
+    url(r'^update_course_progress', views.update_course_progress, name='update_course_progress'),
 
 ]

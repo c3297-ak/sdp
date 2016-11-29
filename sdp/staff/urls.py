@@ -20,17 +20,23 @@ urlpatterns = [
     # staff/assign_instructor
     url(r'^assign_hr$', views.assign_hr_permission, name='assign_hr'),
 
-	#staff/login
-	url(r'^login$', views.login, name='login'),
-	#staff/register
-	url(r'^register$', views.register, name='register'),
+    # staff/login
+    url(r'^login$', views.login, name='login'),
+    # staff/register
+    url(r'^register$', views.register, name='register'),
 
     # UI endpoints
-	url(r'^$', views.loginPage, name='loginPage'),
-	url(r'^loginPage$', views.loginPage, name='loginPage'),
-	url(r'^home$', views.home, name='home'),
-	url(r'^instructor$', views.instructor, name='instructor'),
-	url(r'^participant$', views.participant, name='participant'),
-	url(r'^hr$', views.hr, name='hr'),
-	url(r'^administrator$', views.administrator, name='administrator')
+    url(r'^$', views.loginPage, name='loginPage'),
+    url(r'^loginPage$', views.loginPage, name='loginPage'),
+    url(r'^home$', views.home, name='home'),
+    url(r'^instructor$', views.instructor, name='instructor'),
+    url(r'^participant$', views.participant, name='participant'),
+    url(r'^hr$', views.hr, name='hr'),
+    url(r'^administrator$', views.administrator, name='administrator'),
+
+    # url to get the courses enrolled in by a staff
+    url(r'^(?P<staff_id>[0-9]+)/enrolled', views.enrolled_courses, name='enrolled_courses'),
+
+    # url to get the courses created as an instructor by the staff
+    url(r'^(?P<staff_id>[0-9]+)/courselist_instructor', views.courselist_instructor, name='courselist_instructor'),
 ]

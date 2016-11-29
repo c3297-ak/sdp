@@ -17,6 +17,12 @@ ERR_ALREADY_ENROLLED_CURR = {'failure': True, 'message': 'Already enrolled in th
 ERR_PARTICIPANT_INSTRUCT_SAME = {'failure': True, 'message': 'You cannot enroll in a course you created'}
 ERR_COURSE_NOT_PUBLISHED = {'failure': True, 'message': 'You cannot enroll in a course that is not published'}
 
+# File types
+TEXT = 'text'
+VIDEO = 'video'
+IMG = 'image'
+FILE = 'file'
+
 
 def all_fields_present(data, field_lst):
     for field in field_lst:

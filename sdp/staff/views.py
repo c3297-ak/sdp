@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from django.shortcuts import render
 from .models import Staff, Instructor, Participant, Administrator, HumanResource
+from courses.models import Enrollment, Course
 from sdp.utilities import *
 import json
 
@@ -14,6 +15,7 @@ def all_instructors(request):
             instructors.append(data)
     return JsonResponse({'all_instructors': instructors})
 
+
 def all_participants(request):
     participants = []
     for staff in Staff.objects.all():
@@ -21,6 +23,7 @@ def all_participants(request):
             data = {'username': staff.username, 'id': staff.id}
             participants.append(data)
     return JsonResponse({'all_participants': participants})
+
 
 def all_administrators(request):
     administrator = []
@@ -30,6 +33,7 @@ def all_administrators(request):
             administrator.append(data)
     return JsonResponse({'all_administrators': administrator})
 
+
 def all_humanResources(request):
     humanResources = []
     for staff in Staff.objects.all():
@@ -37,6 +41,7 @@ def all_humanResources(request):
             data = {'username': staff.username, 'id': staff.id}
             humanResources.append(data)
     return JsonResponse({'all_humanResources': humanResources})
+
 
 def assign_instructor_permission(request):
     # POST data must have username
@@ -63,6 +68,7 @@ def assign_instructor_permission(request):
         return_data = ERR_INTERNAL_ERROR
     return JsonResponse(return_data)
 
+
 def assign_admin_permission(request):
     # POST data must have username
     try:
@@ -87,6 +93,7 @@ def assign_admin_permission(request):
         print(e)
         return_data = ERR_INTERNAL_ERROR
     return JsonResponse(return_data)
+
 
 def assign_hr_permission(request):
     # POST data must have username
@@ -113,6 +120,7 @@ def assign_hr_permission(request):
         return_data = ERR_INTERNAL_ERROR
     return JsonResponse(return_data)
 
+
 def login(request):
     if request.method == 'POST':
         try:
@@ -121,7 +129,17 @@ def login(request):
 
             staff = Staff.objects.all().filter(username=post_data['username'], password=post_data['password'])
             if staff.count() > 0:
-                return_data = {'staffId':staff[0].id}
+                staff = staff[0]
+                return_data = dict()
+                return_data['staffId'] = staff.id
+                return_data['participant'] = True  # default
+                # check if instructor
+                if staff.instructor_set.count() > 0:
+                    return_data['instructor'] = True
+                if staff.administrator_set.count() > 0:
+                    return_data['administrator'] = True
+                if staff.humanresource_set.count() > 0:
+                    return_data['human_resource'] = True
             else:
                 return_data = ERR_STAFF_DOES_NOT_EXIST
         except Exception as e:
@@ -130,6 +148,7 @@ def login(request):
     else:
         return_data = ERR_POST_EXPECTED
     return JsonResponse(return_data)
+
 
 def register(request):
     try:
@@ -143,8 +162,8 @@ def register(request):
                     return_data = ERR_STAFF_ALREADY_EXIST
                 else:
                     newStaff = Staff(
-                        username = post_data['username'],
-                        password = post_data['password'])
+                        username=post_data['username'],
+                        password=post_data['password'])
                     newStaff.save()
                     # NOTE: add participant permisson
                     participant = Participant()
@@ -158,20 +177,77 @@ def register(request):
         return_data = ERR_INTERNAL_ERROR
     return JsonResponse(return_data)
 
+def enrolled_courses(request, staff_id):
+    # return {'course_list': [{'courseCode': xxx, 'title': xxx, 'progress': xyz},...]}
+    # or an appropriate error message
+    try:
+        if request.method == 'GET':
+            staff = Staff.objects.filter(pk=staff_id)
+            if staff.count() > 0:
+                staff = staff[0]
+                return_data = dict()
+                courses = []
+                for enrollment in Enrollment.objects.filter(participant=staff):
+                    data = {'courseCode': enrollment.course.courseCode, 'title': enrollment.course.title,
+                            'progress': enrollment.modules_completed}
+                    courses.append(data)
+                return_data['course_list'] = courses
+            else:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+        else:
+            return_data = ERR_GET_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+def courselist_instructor(request, staff_id):
+    # returns {'course_list' : [{'courseCode': xyz, 'title': xyz}...]}
+    # or an appropriate error message
+    try:
+        if request.method == 'GET':
+            staff = Staff.objects.filter(pk=staff_id)
+            if staff.count() > 0:
+                staff = staff[0]
+                # No instructor permission assigned
+                if staff.instructor_set.count() == 0:
+                    return JsonResponse(ERR_NO_INSTRUCTOR_PERMISSION)
+
+                return_data = dict()
+                courses = []
+                for course in Course.objects.filter(instructor=staff):
+                    data = {'courseCode': course.courseCode, 'title': course.title}
+                    courses.append(data)
+                return_data['course_list'] = courses
+            else:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+        else:
+            return_data = ERR_GET_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+
 def loginPage(request):
     return render(request, 'staff/loginPage.html')
+
 
 def home(request):
     return render(request, 'staff/home.html')
 
+
 def participant(request):
     return render(request, 'staff/participant.html')
+
 
 def instructor(request):
     return render(request, 'staff/instructor.html')
 
+
 def administrator(request):
     return render(request, 'staff/admin.html')
+
 
 def hr(request):
     return render(request, 'staff/hr.html')
