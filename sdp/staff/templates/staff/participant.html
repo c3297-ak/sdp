@@ -10,8 +10,6 @@
     <div id="courseDetails"></div>
 </div>
 
-
-
 <div id="viewEnrollment">
     <p><h3>Enrollment</h3></p>
     <div id="enrollmentList"></div>
@@ -48,7 +46,7 @@
                 $('#courseList').empty();
                 $('#courseList').show();                
                 $.each(result.all_courses, function(index, value) {
-                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p><br>");                    
+                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                    
                 });
             }
         });
@@ -82,7 +80,7 @@
                 $("#enrollmentList").empty();
                 $("#enrollmentList").show();
                 $.each(result.course_list, function(index, value) {
-                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p><br>");                    
+                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");                    
                 });
             }
         });
@@ -108,8 +106,6 @@
 
     //enroll in a course
     $('#courseDetails').on('click', 'button', function () {
-        var form = document.getElementById('addEnrollmentForm');
-
         $.ajax({
             url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
             type: 'POST',
