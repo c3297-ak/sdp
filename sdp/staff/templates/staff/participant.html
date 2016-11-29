@@ -1,66 +1,81 @@
+{% extends "staff/header.html" %}
+{% block content %}
+
+<div style="text-align: center;"><button id="viewCoursesBtn">View Courses</button><button id="viewEnrollmentBtn">View Enrollment</button></div>
 <hr>
-<p><b>View Course</b></p>
+
 <div id="viewCourses">
-    <!-- To be completed -->
+    <h3>View Courses</h3>
+    <div id="courseList"></div>
+    <div id="courseDetails"></div>
 </div>
+
+
+
+<div id="viewEnrollment">
+    <p><h3>View Enrollment</h3></p>
+    <div id="enrollmentList"></div>
+    <hr>
+    <form id="addEnrollmentForm">
+        <p><h3>Add Enrollment</h3></p>
+        Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
+        Participant: <input type="text" name="participant" value="Participant"> <br>
+        <button onclick="addComponent()">Add Component</button>
+    </form>
+</div>
+
 <script type="text/javascript">
-    console.log("Load Courses");
-    var endpoint = "http://localhost:8000/courses/";
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-            console.log(xmlHttp.responseText);
-            // Edit viewCourses div with xmlHttp.responseText (in json)
-        }
-    }
-    xmlHttp.open("GET", endpoint, true);
-    xmlHttp.send();
-</script>
+    //option menu control logic
+    $('#viewCourses').hide();
+    $('#viewEnrollment').show();
+    $('#viewCoursesBtn').on('click',function(){
+        $('#viewCourses').show();
+        $('#viewEnrollment').hide();
+        loadAllCourses();
+    });
+    $('#viewEnrollmentBtn').on('click',function(){
+        $('#viewCourses').hide();
+        $('#viewEnrollment').show();
+    });
 
-<hr>
-<p><b>View Course Description</b></p>
-<div id="courseDescription">
-    <!-- To be completed -->
-</div>
-
-<hr>
-<p><b>View Course Description Form</b></p>
-<form id="viewCourseDescriptionForm">
-    Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-    <button onclick="viewCourseDescription()">View Course Description</button>
-</form>
-
-<script>
-    function viewCourseDescription() {
-        var form = document.getElementById('viewCourseDescriptionForm');
-        var endpoint = "http://localhost:8000/courses/" + form.courseCode.value;
-
+    //load all courses
+    function loadAllCourses() {
+        var endpoint = "http://localhost:8000/courses/";
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                 console.log(xmlHttp.responseText);
-                // Edit viewModules div with xmlHttp.responseText (in json)
+                $('#courseDetails').hide();
+                $('#courseList').empty();
+                $('#courseList').show();                
+                var data = JSON.parse(xmlHttp.responseText);
+                $.each(data.all_courses, function(index, value) {
+                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p><br>");                    
+                });
             }
         }
         xmlHttp.open("GET", endpoint, true);
         xmlHttp.send();
     }
-</script>
 
-<hr>
-<p><b>View Enrollment</b></p>
-<div id="viewEnrollment">
-    <!-- To be completed -->
-</div>
+    //view course details
+    $('#courseList').on('click', 'a', function() {
+        var endpoint = 'http://localhost:8000/courses/' + $(this).attr('rel');
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {                
+                //console.log(xmlHttp.responseText);
+                $("#courseList").hide();
+                $("#courseDetails").empty();
+                $("#courseDetails").show();
+                var data = JSON.parse(xmlHttp.responseText);
+                $("#courseDetails").append("<p><b>" + data.courseCode + ": " + data.title + "</b><br>Category: " + data.category + "<br>Instructor: " + data.instructor_info.username + "<br>Description: " + data.description + "<br>Number of Modules: " + data.module_count + "</p><br>");                    
+            }
+        }
+        xmlHttp.open("GET", endpoint, true);
+        xmlHttp.send();
+    });
 
-<hr>
-<p><b>Add Enrollment</b></p>
-<form id="addEnrollmentForm">
-    Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-    Participant: <input type="text" name="participant" value="Participant"> <br>
-</form>
-<button onclick="addComponent()">Add Component</button>
-<script>
     function addComponent() {
         var form = document.getElementById('addEnrollmentForm');
         var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/enroll" + "?participant=" + form.participant.value;
@@ -76,3 +91,5 @@
         xmlHttp.send();
     }
 </script>
+
+{% endblock %}

@@ -24,7 +24,7 @@
 	                    if (response.failure == null && form.username.value != "" && form.password.value != "") {
 	                        var status = document.getElementById('loginStatus');
 	                        status.innerHTML = "";
-	                        document.cookie = "staffId="+response.staffId+";path=/";
+	                        setCookie('staffId',response.staffId,1);
 	                        window.location.href = "home";
 	                    } else {
 	                    	form.username.value = "username";
@@ -71,7 +71,7 @@
 		                if (response.failure == null) {
 		                    var status = document.getElementById('registerStatus');
 		                    status.innerHTML = "";
-		                    document.cookie = "staffId="+response.id+";path=/";
+		                    setCookie('staffId',response.staffId,1);
 		                    window.location.href = "home";
 		                } else {
 		                	form.username.value = "username";
