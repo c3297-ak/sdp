@@ -1,3 +1,7 @@
+{% extends "staff/header.html" %}
+{% block content %}
+<script>instructorID = getCookie("staffId");</script>
+
 <p><b>View Course</b></p>
 <div id="viewCourses">
     <!-- To be completed -->
@@ -9,7 +13,17 @@
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
             console.log(xmlHttp.responseText);
-            // Edit viewCourses div with xmlHttp.responseText (in json)
+            var data = JSON.parse(xmlHttp.responseText);
+            $.each(data.all_courses, function(index, value) {
+                if (value.instructor === instructorID) {
+                    $("#viewCourses").append("<h3>" + value.courseCode + ": " + value.title + "</h3><p> Category: " + value.category + "</p><p> Description: " + value.description + "</p>");
+                
+                    if (!value.isPublished)
+                        $("#viewCourses").append("<button type='button'>Publish</button>");
+
+                    $("#viewCourses").append("<br>");
+                }
+            });            
         }
     }
     xmlHttp.open("GET", endpoint, true);
@@ -125,3 +139,5 @@
 
 <hr>
 <p><b>Publish Course - Not suppoted yet</b></p>
+
+{% endblock %}
