@@ -1,11 +1,11 @@
 {% extends "staff/header.html" %}
 {% block content %}
 
-<div style="text-align: center;"><button id="viewCoursesBtn">View Courses</button><button id="viewEnrollmentBtn">View Enrollment</button></div>
+<div style="text-align: center;"><button id="viewCoursesBtn">All Courses</button><button id="viewEnrollmentBtn">My Enrollment</button></div>
 <hr>
 
 <div id="viewCourses">
-    <h3>View Courses</h3>
+    <h3>All Courses</h3>
     <div id="courseList"></div>
     <div id="courseDetails"></div>
 </div>
@@ -13,83 +13,123 @@
 
 
 <div id="viewEnrollment">
-    <p><h3>View Enrollment</h3></p>
+    <p><h3>Enrollment</h3></p>
     <div id="enrollmentList"></div>
-    <hr>
-    <form id="addEnrollmentForm">
-        <p><h3>Add Enrollment</h3></p>
-        Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-        Participant: <input type="text" name="participant" value="Participant"> <br>
-        <button onclick="addComponent()">Add Component</button>
-    </form>
+    <div id="enrollmentDetails"></div>
 </div>
 
 <script type="text/javascript">
-    //option menu control logic
+    //initial state
+    loadEnrollment();    
     $('#viewCourses').hide();
     $('#viewEnrollment').show();
+
+
+    //option menu control logic
     $('#viewCoursesBtn').on('click',function(){
         $('#viewCourses').show();
         $('#viewEnrollment').hide();
-        loadAllCourses();
+        loadCourses();
     });
     $('#viewEnrollmentBtn').on('click',function(){
         $('#viewCourses').hide();
         $('#viewEnrollment').show();
+        loadEnrollment();
     });
 
     //load all courses
-    function loadAllCourses() {
-        var endpoint = "http://localhost:8000/courses/";
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
+    function loadCourses() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/',
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
                 $('#courseDetails').hide();
                 $('#courseList').empty();
                 $('#courseList').show();                
-                var data = JSON.parse(xmlHttp.responseText);
-                $.each(data.all_courses, function(index, value) {
+                $.each(result.all_courses, function(index, value) {
                     $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p><br>");                    
                 });
             }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        });
     }
 
     //view course details
     $('#courseList').on('click', 'a', function() {
-        var endpoint = 'http://localhost:8000/courses/' + $(this).attr('rel');
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {                
-                //console.log(xmlHttp.responseText);
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + $(this).attr('rel'),
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
                 $("#courseList").hide();
                 $("#courseDetails").empty();
                 $("#courseDetails").show();
-                var data = JSON.parse(xmlHttp.responseText);
-                $("#courseDetails").append("<p><b>" + data.courseCode + ": " + data.title + "</b><br>Category: " + data.category + "<br>Instructor: " + data.instructor_info.username + "<br>Description: " + data.description + "<br>Number of Modules: " + data.module_count + "</p><br>");                    
+                $("#courseDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                $("#courseDetails").append("<button type='button' rel='" + result.courseCode + "'>Enroll</button>");
             }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        });
     });
 
-    function addComponent() {
-        var form = document.getElementById('addEnrollmentForm');
-        var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/enroll" + "?participant=" + form.participant.value;
-
+    //load all course enrollments
+    function loadEnrollment() {
         var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
-                // Edit viewCompnents div with xmlHttp.responseText (in json)
+        $.ajax({
+            url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/enrolled',
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr){
+                $("#enrollmentDetails").hide();
+                $("#enrollmentList").empty();
+                $("#enrollmentList").show();
+                $.each(result.course_list, function(index, value) {
+                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p><br>");                    
+                });
             }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        });
     }
+
+    //view details of an enrolled course
+    $('#enrollmentList').on('click', 'a', function() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/',
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                console.log(JSON.stringify(result));
+                $("#enrollmentList").hide();
+                $("#enrollmentDetails").empty();
+                $("#enrollmentDetails").show();
+                $("#enrollmentDetails").append("<h3>Course Info</h3>")
+                $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                $("#enrollmentDetails").append("<h3>Modules</h3>");
+            }
+        });
+    });
+
+    //enroll in a course
+    $('#courseDetails').on('click', 'button', function () {
+        var form = document.getElementById('addEnrollmentForm');
+
+        $.ajax({
+            url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
+            type: 'POST',
+            data: JSON.stringify({staff_id : getCookie('staffId')}),
+            dataType: 'json',
+            beforeSend(xhr){
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    cf = confirm('Please confirm that you would like to enroll in this course.');
+                    if (cf)
+                        window.location.reload();
+                }
+            }
+        });
+    });
+
 </script>
 
 {% endblock %}

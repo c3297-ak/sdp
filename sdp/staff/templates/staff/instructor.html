@@ -129,7 +129,10 @@
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
                 console.log(xmlHttp.responseText);
-                // Edit viewCompnents div with xmlHttp.responseText (in json)
+                var data = JSON.parse(xmlHttp.responseText);
+                //if (data.failure === 'true') {
+                    alert(data.message);
+                //}
             }
         }
         xmlHttp.open("GET", endpoint, true);
