@@ -6,8 +6,10 @@
 
 <div id="viewCourses">
     <h3>All Courses</h3>
-    <select name='catergoryFilter'><option value=''>Category</option></select>
-    <div id="courseList"></div>
+    <div id="courseList">
+        Filter by: <select name='catergoryFilter'><option value='' selected>All Categories</option></select>
+        <div id='courseFilteredList'></div>
+    </div>
     <div id="courseDetails"></div>
 </div>
 
@@ -44,11 +46,14 @@
             dataType: 'json',
             success(result,status,xhr) {
                 $('#courseDetails').hide();
-                $('#courseList').empty();
+                $('#courseFilteredList').empty();
                 $('#courseList').show();                
                 $.each(result.all_courses, function(index, value) {
                     if(value.isPublished)
-                        $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                   
+                        if ($('#courseList select').val() == '')
+                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
+                        else if ($('#courseList select').val() == value.category) 
+                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                   
                 });
             }
         });

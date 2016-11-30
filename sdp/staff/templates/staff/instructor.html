@@ -8,8 +8,8 @@
     <h3>Add A Course</h3>
     <form id="addCourseForm">
         Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-        Category: <input type="text" name="category" value="Course Category"> <br>
-        Published: <input type="text" name="isPublished" value="False"> <br>
+        Category: <select name='catergoryFilter'><option value='' selected>All Categories</option></select><br>
+        Published: <select name='catergoryFilter'><option value='False' selected>False</option><option value='True' selected>True</option></select><br>
         Title: <input type="text" name="title" value="Course Title"> <br>
         Description: <input type="text" name="description" value="Course Description"> <br>
         <input type="button" value='Add Course' onclick="addCourse()">
@@ -65,16 +65,14 @@
 
     //load all courses created by this instructor
     $.ajax({
-        url: 'http://localhost:8000/courses/',
+        url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/courselist_instructor',
         type: 'GET',
         dataType: 'json',
         success(result,status,xhr) {              
-            $.each(result.all_courses, function(index, value) {
-                if (value.instructor == getCookie('staffId')) {
-                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
-                    if(!value.isPublished)
-                        $("#courseList").append("<button type='button'>Publish</button>");
-                }                 
+            $.each(result.course_list, function(index, value) {
+                $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
+                if(!value.isPublished)
+                    $("#courseList").append("<button type='button'>Publish</button>");                
             });
         }
     });

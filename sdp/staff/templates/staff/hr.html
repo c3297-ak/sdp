@@ -1,7 +1,7 @@
 {% extends "staff/header.html" %}
 {% block content %}
 
-<h3>Search Courses Completed By:</h3>
+<h3>Search courses completed by:</h3>
 <form id='searchByParticipantForm'>
 	Participant: <input type='text' name='username' value='username'>
 	<input type='button' value='Search Courses' onclick='searchCourses()'>
@@ -9,7 +9,7 @@
 <hr>
 <div id='courseListByParticipant'></div>
 <hr>
-<h3>Search Participants Who Have Completed:</h3>
+<h3>Search participants who have completed:</h3>
 <form id='searchByCourseForm'>
 	Course: <select name='courses'>
 		<option value=''>Please choose a course</option>
