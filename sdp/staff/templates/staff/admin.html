@@ -1,1 +1,95 @@
-<h1>PLEASE UPDATE templates/staff/admin.html</h1>
+{% extends "staff/header.html" %}
+{% block content %}
+
+<h3>SDP Administration</h3>
+<div id='staffList'>
+	<div id='admins'>
+		<b>Administrators</b>
+		<div id='administratorList'></div>
+	</div>
+	<div id='instructors'>
+		<b>Instructors</b>
+		<div id='instructorList'></div>
+	</div>
+	<div id='participants'>
+		<b>Participants</b>
+		<div id='participantList'></div>
+	</div>
+	<div id='hrs'>
+		<b>Human Resources</b>
+		<div id='humanResourceList'></div>
+	</div>
+</div>
+
+<script type='text/javascript'>
+
+	//load staff function
+	function loadStaff(staffRole) {
+		$.ajax({
+        	url: 'http://localhost:8000/staff/' + staffRole + 's',
+        	type: 'GET',
+        	dataType: 'json',
+        	success(result,status,xhr) {
+            	console.log(JSON.stringify(result));
+            	var data;
+            	switch (staffRole) {
+            		case 'administrator':
+            			data = result.all_administrators;
+            			roleOptions = "<option value='administrator' selected>Administrator</option><option value='instructor'>Instructor</option><option value='participant'>participant</option><option value='humanResource'>Human Resource</option>";
+            			break;
+            		case 'instructor':
+            			data = result.all_instructors;
+            			roleOptions = "<option value='administrator'>Administrator</option><option value='instructor' selected>Instructor</option><option value='participant'>participant</option><option value='humanResource'>Human Resource</option>";
+            			break;
+            		case 'participant':
+            			data = result.all_participants;
+            			roleOptions = "<option value='administrator'>Administrator</option><option value='instructor'>Instructor</option><option value='participant' selected>participant</option><option value='humanResource'>Human Resource</option>";
+            			break;
+            		case 'humanResource':
+            			data = result.all_humanResources;
+            			roleOptions = "<option value='admin'>Administrator</option><option value='instructor'>Instructor</option><option value='participant'>participant</option><option value='hr' selected>Human Resource</option>";
+            			break;
+            	}          
+            	$.each(data, function(index, value) {
+            		$('#' + staffRole + 'List').append("<p>" + value.username + "<select name='role' rel='" + value.username + "'>" + roleOptions + "</select></p>");
+            	});
+        	}
+    	});
+	}
+
+	//load all staff
+	function loadAllStaff() {
+		$('#administratorList').empty();
+		$('#instructorList').empty();
+		$('#participantList').empty();
+		$('#humanResourceList').empty();
+		loadStaff('administrator');
+		loadStaff('instructor');
+		loadStaff('participant');
+		loadStaff('humanResource');
+	}
+
+	loadAllStaff();
+
+	//role assignment logic
+	/*$('#staffList').on('change', 'select', function(){
+		cf = confirm('Please confirm the you would like to change the role of this user');
+		if (cf) {
+			$.ajax({
+				url: 'http://localhost:8000/staff/assign_' + $(this).value,
+				type: 'POST',
+				data: JSON.stringify({username : $(this).attr('rel')}),
+				dataType: 'json',
+				beforeSend(xhr) {
+					xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+				},
+				success(result,status,xhr) {
+					loadAllStaff();
+				}
+			});
+		}
+	});*/
+
+</script>
+
+{% endblock %}

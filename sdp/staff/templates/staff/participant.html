@@ -23,7 +23,7 @@
     $('#viewEnrollment').show();
 
 
-    //option menu control logic
+    //page control logic
     $('#viewCoursesBtn').on('click',function(){
         $('#viewCourses').show();
         $('#viewEnrollment').hide();
@@ -89,11 +89,10 @@
     //view details of an enrolled course
     $('#enrollmentList').on('click', 'a', function() {
         $.ajax({
-            url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/',
+            url: 'http://localhost:8000/courses/' + $(this).attr('rel'),
             type: 'GET',
             dataType: 'json',
             success(result,status,xhr) {
-                console.log(JSON.stringify(result));
                 $("#enrollmentList").hide();
                 $("#enrollmentDetails").empty();
                 $("#enrollmentDetails").show();
@@ -106,24 +105,25 @@
 
     //enroll in a course
     $('#courseDetails').on('click', 'button', function () {
-        $.ajax({
-            url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
-            type: 'POST',
-            data: JSON.stringify({staff_id : getCookie('staffId')}),
-            dataType: 'json',
-            beforeSend(xhr){
-                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-            },
-            success(result,status,xhr) {
-                if (result.hasOwnProperty('failure'))
-                    alert(result.message);
-                else {
-                    cf = confirm('Please confirm that you would like to enroll in this course.');
-                    if (cf)
+        cf = confirm('Please confirm that you would like to enroll in this course.');
+        if (cf) {
+            $.ajax({
+                url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
+                type: 'POST',
+                data: JSON.stringify({staff_id : getCookie('staffId')}),
+                dataType: 'json',
+                beforeSend(xhr){
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
                         window.location.reload();
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 
 </script>

@@ -2,10 +2,10 @@
 {% block content %}
 
 <div id="viewCourses">
-    <h3>View Course</h3>
+    <h3>View Courses</h3>
     <div id="courseList"></div>
     <hr>
-    <h3>Add Course</h3>
+    <h3>Add A Course</h3>
     <form id="addCourseForm">
         Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
         Category: <input type="text" name="category" value="Course Category"> <br>
@@ -17,7 +17,7 @@
 </div>
 
 <div id="viewModules">
-    <h3>Modules</h3>
+    <h3><a href='#'>View Courses</a> / Modules</h3>
     <div id='moduleList'></div>
     <hr>
     <h3>Add Module</h3>
@@ -47,17 +47,28 @@
 </div>
 
 <script type="text/javascript">
+    //initial state
     $('#viewModules').hide();
     $('#viewComponents').hide();
     $('#viewCourses').show();
+
+    //page control logic
+    $("#viewCourses").on('click','a',function(){
+        $('#viewCourses').hide();
+        $('#viewModules').show();
+    });
+
+    $('#viewModules').on('click','h3 a', function() {
+        $('#viewModules').hide();
+        $('#viewCourses').show();
+    });
 
     //load all courses created by this instructor
     $.ajax({
         url: 'http://localhost:8000/courses/',
         type: 'GET',
         dataType: 'json',
-        success(result,status,xhr) {
-            console.log(JSON.stringify(result));              
+        success(result,status,xhr) {              
             $.each(result.all_courses, function(index, value) {
                 if (value.instructor == getCookie('staffId')) {
                     $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
@@ -66,11 +77,6 @@
                 }                 
             });
         }
-    });
-
-    $("#viewCourses").on('click','a',function(){
-        $('#viewCourses').hide();
-        $('#viewModules').show();
     });
 
     function addCourse() {
@@ -103,7 +109,25 @@
     }
 
     function addModule() {
-        var form = document.getElementById('addModuleForm');
+        $.ajax({
+            url: "http://localhost:8000/courses/" + form.courseCode.value + "/addModule" + "?moduleTitle=" + form.moduleTitle.value + "&sequenceNumber=" + form.sequenceNumber.value,
+            type: 'POST',
+            data: JSON.stringify({
+
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+
+                }    
+            }
+        });
+        /*var form = document.getElementById('addModuleForm');
         var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/addModule" + "?moduleTitle=" + form.moduleTitle.value + "&sequenceNumber=" + form.sequenceNumber.value;
 
         var xmlHttp = new XMLHttpRequest();
@@ -114,14 +138,30 @@
             }
         }
         xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        xmlHttp.send();*/
     }
-</script>
 
-
-<script>
     function addComponent() {
-        var form = document.getElementById('addComponentForm');
+        $.ajax({
+            url: "http://localhost:8000/courses/" + form.courseCode.value + "modules/" + form.moduleTitle.value + "/addComponent" + "?order=" + form.order.value + "&contentType=" + form.contentType.value + "&contentTitle=" + form.contentTitle.value + "&content=" + form.content.value,
+            type: 'POST',
+            data: JSON.stringify({
+
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+
+                }   
+                
+            }
+        });
+        /*var form = document.getElementById('addComponentForm');
         var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "modules/" + form.moduleTitle.value + "/addComponent" + "?order=" + form.order.value + "&contentType=" + form.contentType.value + "&contentTitle=" + form.contentTitle.value + "&content=" + form.content.value;
 
         var xmlHttp = new XMLHttpRequest();
@@ -132,7 +172,7 @@
             }
         }
         xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        xmlHttp.send();*/
     }
 </script>
 
