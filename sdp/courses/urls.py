@@ -49,7 +49,7 @@ urlpatterns = [
         views.update_module_order, name='updatedComponentOrder$'),
 
     # POST request to upload a component. Check function for required POST body
-    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/uploa d$',
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/upload$',
         views.upload_component, name='upload_component'),
 
     # POST request to remove a component of a module. Check function for required POST body
@@ -57,5 +57,11 @@ urlpatterns = [
 
     # POST request to update the course progress for a staff. Check function for required POST body
     url(r'^update_course_progress', views.update_course_progress, name='update_course_progress'),
+
+    url(r'^uploadfiletest', views.uploadfiletest),
+    url(r'^deletefiletest', views.removefiletest),
+    url(r'^uploadtest', views.uploadTest),
+    url(r'^downloadtest', views.downloadtest),
+
 
 ]

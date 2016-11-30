@@ -55,7 +55,7 @@ def assign_instructor_permission(request):
                 staff = Staff.objects.filter(username=post_data['username'])
                 if staff.count() == 0:
                     return_data = ERR_STAFF_DOES_NOT_EXIST
-                else:
+                elif staff[0].instructor_set.count() == 0:
                     staff = staff[0]
                     instructor = Instructor()
                     instructor.staff = staff

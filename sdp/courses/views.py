@@ -7,6 +7,8 @@ from staff.models import Staff
 from sdp.utilities import *
 import os
 
+from django.shortcuts import render
+
 base_upload_path = './uploads/'
 
 
@@ -506,6 +508,12 @@ def get_completed_participants(request, course_code):
 
 # to test
 def upload_component(request, course_code, module_seq):
+    print('Files', request.FILES)
+    print('POST', request.POST)
+    print('Body', request.body)
+
+    return JsonResponse({'test': True})
+
     if request.method == 'POST':
         path = base_upload_path + str(course_code) + '/' + str(module_seq) + '/' + request.FILES['upload'].name
         f = request.FILES['upload']
@@ -563,3 +571,37 @@ def update_course_progress(request):
             enrollment.save()
 
     return JsonResponse(model_to_dict(enrollment))
+
+
+def uploadTest(request):
+    return render(request, 'courses/uploadtest.html')
+
+
+basepath = 'uploads/'
+def uploadfiletest(request):
+    print(request.FILES)
+    file = request.FILES['upload']
+    destination = open(basepath + str(file), 'wb+')
+    for chunk in file.chunks():
+        destination.write(chunk)
+    destination.close()
+    return JsonResponse({'success': True, 'link': basepath+str(file)})
+
+def removefiletest(request):
+    # post_data = json.loads(request.body.decode('utf-8'))
+    path = basepath + 'Assignment3_questions.pdf'
+    os.remove(path)
+    return JsonResponse({'success': True})
+
+def downloadtest(request):
+    filename = basepath + 'Assignment3_questions.pdf'
+    from django.http import HttpResponse
+    from django.utils.encoding import smart_str
+
+    response = HttpResponse(
+        content_type='application/force-download')  # mimetype is replaced by content_type for django 1.7
+    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filename)
+    response['X-Sendfile'] = smart_str(filename)
+
+
+    return response

@@ -1,3 +1,16 @@
+Add category:
+{
+	"category_name": "Maths"
+}
+
+Staff has to be added using django admin for now
+
+Assign instructor:
+{
+	"username": "Sourav"
+}
+
+
 Add course:
 {
 	"courseCode": "M123",
@@ -15,6 +28,15 @@ Add module:
 	"sequenceNumber": 3
 }
 
+
+Reorder module:
+{
+	"module_sequences": [
+			{"id": 2, "sequenceNumber": 3},
+			{"id": 1, "sequenceNumber": 2},
+			{"id": 3, "sequenceNumber": 1}
+		]
+}
 
 Add component:
 {

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload test</title>
+
+    <input id='uploadedfile' type="file" placeholder="Upload file">
+    <button onclick="uploadFunc()"> Upload </button>
+    <button onclick="deleteFunc()"> Delete </button>
+    <button onclick="dowloadFunc()"> Download </button>
+
+    <script>
+        function uploadFunc(){
+            console.log("Calling upload")
+            var xhr = new XMLHttpRequest();
+            var ele = document.getElementById('uploadedfile');
+            var form_data = new FormData();
+            form_data.append('upload', ele.files[0]);
+            console.log(form_data.get('upload'));
+            xhr.open("POST", "uploadfiletest");
+            xhr.send(form_data);
+        }
+
+        function deleteFunc(){
+            var xhr = new XMLHttpRequest();
+            var data = {"name": "Assignment3_questions.pdf"};
+            xhr.open("POST", "deletefiletest");
+            xhr.send(data);
+        }
+
+        function dowloadFunc(){
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "downloadtest");
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+
+</body>
+</html>
