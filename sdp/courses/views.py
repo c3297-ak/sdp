@@ -284,7 +284,7 @@ def get_all_components(module):
             components.append((data['order'], data))
         for text_component in module.textcomponent_set.all():
             data = model_to_dict(text_component)
-            components.append((data['order']), data)
+            components.append((data['order'], data))
         for video_component in module.videocomponent_set.all():
             data = model_to_dict(video_component)
             components.append((data['order'], data))

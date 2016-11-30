@@ -14,7 +14,7 @@
 </div>
 
 <div id="viewEnrollment">
-    <p><h3>My Enrollment</h3></p>
+    <h3>My Enrollment</h3>
     <div id="enrollmentList"></div>
     <div id="enrollmentDetails"></div>
 </div>
@@ -24,7 +24,6 @@
     loadEnrollment();    
     $('#viewCourses').hide();
     $('#viewEnrollment').show();
-
 
     //page control logic
     $('#viewCoursesBtn').on('click',function(){
@@ -50,7 +49,7 @@
         }
     });
 
-    //filtering logic
+    //filtering by category logic
      $('#courseList').on('change', 'select', function() {
         loadCourses();
      });
@@ -94,7 +93,6 @@
 
     //load all course enrollments
     function loadEnrollment() {
-        var xmlHttp = new XMLHttpRequest();
         $.ajax({
             url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/enrolled',
             type: 'GET',
@@ -120,9 +118,15 @@
                 $("#enrollmentList").hide();
                 $("#enrollmentDetails").empty();
                 $("#enrollmentDetails").show();
-                $("#enrollmentDetails").append("<h3>Course Info</h3>")
+                $("#enrollmentDetails").append("<h3>Course Info</h3>");
                 $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
-                $("#enrollmentDetails").append("<h3>Modules</h3>");
+                $("#enrollmentDetails").append("<hr><h3>Modules & Components</h3>");
+                $.each(result.modules, function(index, value) {
+                    $('#enrollmentDetails').append("<p><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b><br>Number of Component: " + value.component_count + "</p>");
+                    $.each(value.components, function(index, data) {
+                        $('#enrollmentDetails').append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
+                    });
+                });
             }
         });
     });
