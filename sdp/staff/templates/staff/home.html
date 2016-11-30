@@ -11,7 +11,7 @@
     <h2 style="text-align: center">SDP</h2>
     <hr>
 
-    <div id="permissionButtons" style="text-align: center;"><button onClick="logout()"> Log Out</button></div>
+    <div id="permissionButtons" style="text-align: center;"></div>
 
     <hr>
     
@@ -20,48 +20,25 @@
     <script type="text/javascript">
 		staffId = getCookie('staffId');
 
-		// Get permission for participant
-		/*$.get("http://localhost:8000/staff/participants",function(data, status){
-    		list = data.all_participants;
-    		for(var i in list) {
-    			if (list[i].id == staffId) {
-    				$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
-			    }
-    		}
-    	});*/
+        updateDisplay("participant");
 
-    	$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
-    	updateDisplay("participant");
+        // Get permission for instructor
+        $.get("http://localhost:8000/staff/"+staffId+"/getStaffUsername",function(data, status){
+            $.get("http://localhost:8000/staff/"+data.username+"/staffInfo",function(data, status){
+                $("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
+                if (data.instructor == true) {
+                    $("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
+                }
+                if (data.admin == true) {
+                    $("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
+                }
+                if (data.hr == true) {
+                    $("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
+                }
+            });
+        });
 
-		// Get permission for instructor
-    	$.get("http://localhost:8000/staff/instructors",function(data, status){
-    		list = data.all_instructors;
-    		for(var i in list) {
-    			if (list[i].id == staffId) {
-    				$("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
-			    }
-    		}
-    	});
-
-    	// Get permission for admin
-    	$.get("http://localhost:8000/staff/administrators",function(data, status){
-    		list = data.all_administrators
-    		for(var i in list) {
-    			if (list[i].id == staffId) {
-			    	$("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
-			    }
-    		}
-    	});
-
-    	// Get permission for hr
-    	$.get("http://localhost:8000/staff/humanResources",function(data, status){
-    		list = data.all_humanResources
-    		for(var i in list) {
-    			if (list[i].id == staffId) {
-			    	$("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
-			    }
-    		}
-    	});
+        $("#permissionButtons").append("<button onClick=\"logout()\"> Log Out</button>");
 
     	function logout() {
     		document.cookie = "staffId="+";expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/";

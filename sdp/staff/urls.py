@@ -4,6 +4,11 @@ from . import views
 app_name = 'staff'
 
 urlpatterns = [
+
+    url(r'^(?P<staff_username>.+)/staffInfo$', views.staffInfo, name='staffInfo'),
+    url(r'^(?P<staff_id>[0-9]+)/getStaffUsername$', views.getStaffUsername, name='getStaffUsername'),
+    url(r'^staffs$', views.staffs, name='staffs'),
+
     # staff/instructors
     url(r'^instructors$', views.all_instructors, name='all_instructors'),
     # staff/participants
