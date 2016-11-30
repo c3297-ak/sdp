@@ -6,6 +6,62 @@ from courses.models import Enrollment, Course
 from sdp.utilities import *
 import json
 
+def getStaffUsername(request, staff_id):
+    try:
+        if request.method == 'GET':
+            staff = Staff.objects.filter(id=staff_id)
+            if staff.count() == 0:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+            else:
+                username = staff[0].username;
+            return JsonResponse({
+                'username': username
+            })
+        else:
+            return_data = ERR_POST_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
+def staffInfo(request, staff_username):
+    try:
+        if request.method == 'GET':
+            username = ""
+            isInstructor = False
+            isAdmin = False
+            isHR = False
+
+            staff = Staff.objects.filter(username=staff_username)
+            if staff.count() == 0:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+            else:
+                username = staff[0].username;
+               
+            staff = staff[0]
+            
+            if staff.instructor_set.all().count() > 0:
+                isInstructor = True
+
+            if staff.administrator_set.all().count() > 0:
+                isAdmin = True
+
+            if staff.humanresource_set.all().count() > 0:
+                isHR = True
+
+            return JsonResponse({
+                'username': username,
+                'participant': True,
+                'instructor': isInstructor,
+                'admin': isAdmin,
+                'hr': isHR
+            })
+        else:
+            return_data = ERR_POST_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
 
 def all_instructors(request):
     instructors = []

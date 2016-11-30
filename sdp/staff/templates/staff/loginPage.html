@@ -71,7 +71,7 @@
 		                if (response.failure == null) {
 		                    var status = document.getElementById('registerStatus');
 		                    status.innerHTML = "";
-		                    setCookie('staffId',response.staffId,1);
+		                    setCookie('staffId',response.id,1);
 		                    window.location.href = "home";
 		                } else {
 		                	form.username.value = "username";
