@@ -12,17 +12,23 @@ from sdp.utilities import *
 
 # from staff.models import Participant, Instructor
 
+class Category(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return 'Category: ' + self.name
+
 
 class Course(models.Model):
     instructor = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     courseCode = models.CharField(max_length=200)
-    category = models.CharField(max_length=200)
     isPublished = models.BooleanField(default=False)
     title = models.CharField(max_length=200)
     description = models.TextField()
 
     def __str__(self):
-        return self.courseCode + ' ' + ' ' + self.title + ' ' + self.category + ' Published: ' + str(self.isPublished)
+        return self.courseCode + ' ' + ' ' + self.title + ' ' + self.category.name + ' Published: ' + str(self.isPublished)
 
 
 class Module(models.Model):
@@ -73,6 +79,10 @@ class ImageComponent(Component):
         return 'Image component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
 
 
+class VideoComponent(Component):
+    def __str__(self):
+        return 'Video component with order: '+ str(self.order)+ ' in module with id: '+ str(self.module.id)
+
 class Enrollment(models.Model):
     isCompleted = models.BooleanField(default=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -81,3 +91,4 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return 'Course: ' + self.course.courseCode + ", Participant: " + self.participant.username
+
