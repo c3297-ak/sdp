@@ -1,1 +1,57 @@
-<h1>PLEASE UPDATE templates/staff/hr.html</h1>
+{% extends "staff/header.html" %}
+{% block content %}
+
+<h3>Search Courses Completed By:</h3>
+<form id='searchByParticipantForm'>
+	Participant: <input type='text' name='username' value='username'>
+	<input type='button' value='Search Courses' onclick='searchCourses()'>
+</form>
+<hr>
+<div id='courseListByParticipant'></div>
+<hr>
+<h3>Search Participants Who Have Completed:</h3>
+<form id='searchByCourseForm'>
+	Course: <select name='courses'>
+		<option value=''>Please choose a course</option>
+	</select>
+	<input type='button' value='Search Participants' onclick='searchParticipants()'>
+</form>
+<hr>
+<div id='participantListByCourse'></div>
+
+<script type='text/javascript'>
+
+	//get all courses for the select tab
+	$.ajax({
+        url: 'http://localhost:8000/courses/',
+        type: 'GET',
+        dataType: 'json',
+        success(result,status,xhr) {              
+            $.each(result.all_courses, function(index, value) {
+                if (value.isPublished) {
+                    $('#searchByCourseForm select').append("<option value='" + value.courseCode + "'>" + value.courseCode + " : " + value.title + "</option>");                              
+                }
+            });
+        }
+    });
+
+	//search participants who have completed a course
+	function searchParticipants() {
+		var form = document.getElementById('searchByCourseForm');
+		if (form.courses.value == '')
+			alert('Please choose a course');
+		else
+			$.ajax({
+				url: 'http://localhost:8000/courses/' + form.courses.value + '/completed',
+				type: 'GET',
+				dataType: 'json',
+				success(result,status,xhr) {
+					$.each(result.completed_enrolls, function() {
+
+					})
+				}
+			});
+	}	
+</script>
+
+{% endblock %}

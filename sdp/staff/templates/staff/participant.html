@@ -11,7 +11,7 @@
 </div>
 
 <div id="viewEnrollment">
-    <p><h3>Enrollment</h3></p>
+    <p><h3>My Enrollment</h3></p>
     <div id="enrollmentList"></div>
     <div id="enrollmentDetails"></div>
 </div>
@@ -46,7 +46,8 @@
                 $('#courseList').empty();
                 $('#courseList').show();                
                 $.each(result.all_courses, function(index, value) {
-                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                    
+                    if(value.isPublished)
+                        $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                   
                 });
             }
         });

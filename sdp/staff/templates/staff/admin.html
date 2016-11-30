@@ -1,8 +1,22 @@
 {% extends "staff/header.html" %}
 {% block content %}
 
-<h3>SDP Administration</h3>
-<div id='staffList'>
+<div style="text-align: center;"><button id="viewStaffBtn">Manage Staff</button><button id="viewCategoryBtn">Manage Categories</button></div>
+<hr>
+
+<div id='viewStaff'>
+	<h3>Change Role</h3>
+	<form id='changeRoleForm'>
+		Username: <input type='text' name='username' value='username'>
+		Role: <select name='role' name='role'>
+			<option value='admin' selected>Administrator</option>
+			<option value='instructor'>Instructor</option>
+			<option value='hr'>Human Resource</option>
+		</select>
+		<input type='button' onclick='addRole()' value='Add Role'>
+	</form>
+	<hr>
+	<h3>All Staff</h3>
 	<div id='admins'>
 		<b>Administrators</b>
 		<div id='administratorList'></div>
@@ -21,7 +35,24 @@
 	</div>
 </div>
 
+<div id='viewCatogories'></div>
+
 <script type='text/javascript'>
+	//initial state
+	$('#viewStaff').show();
+    $('#viewCategories').hide();
+    loadAllStaff();
+
+    //page control logic
+    $('#viewStaffBtn').on('click',function(){
+        $('#viewStaff').show();
+        $('#viewCategories').hide();
+        loadAllStaff();
+    });
+    $('#viewCategoryBtn').on('click',function(){
+        $('#viewStaff').hide();
+        $('#viewCategories').show();
+    });
 
 	//load staff function
 	function loadStaff(staffRole) {
@@ -35,23 +66,19 @@
             	switch (staffRole) {
             		case 'administrator':
             			data = result.all_administrators;
-            			roleOptions = "<option value='administrator' selected>Administrator</option><option value='instructor'>Instructor</option><option value='participant'>participant</option><option value='humanResource'>Human Resource</option>";
             			break;
             		case 'instructor':
             			data = result.all_instructors;
-            			roleOptions = "<option value='administrator'>Administrator</option><option value='instructor' selected>Instructor</option><option value='participant'>participant</option><option value='humanResource'>Human Resource</option>";
             			break;
             		case 'participant':
             			data = result.all_participants;
-            			roleOptions = "<option value='administrator'>Administrator</option><option value='instructor'>Instructor</option><option value='participant' selected>participant</option><option value='humanResource'>Human Resource</option>";
             			break;
             		case 'humanResource':
             			data = result.all_humanResources;
-            			roleOptions = "<option value='admin'>Administrator</option><option value='instructor'>Instructor</option><option value='participant'>participant</option><option value='hr' selected>Human Resource</option>";
             			break;
             	}          
             	$.each(data, function(index, value) {
-            		$('#' + staffRole + 'List').append("<p>" + value.username + "<select name='role' rel='" + value.username + "'>" + roleOptions + "</select></p>");
+            		$('#' + staffRole + 'List').append("<p>" + value.username + "</p>");
             	});
         	}
     	});
@@ -69,26 +96,22 @@
 		loadStaff('humanResource');
 	}
 
-	loadAllStaff();
-
-	//role assignment logic
-	/*$('#staffList').on('change', 'select', function(){
-		cf = confirm('Please confirm the you would like to change the role of this user');
-		if (cf) {
-			$.ajax({
-				url: 'http://localhost:8000/staff/assign_' + $(this).value,
-				type: 'POST',
-				data: JSON.stringify({username : $(this).attr('rel')}),
-				dataType: 'json',
-				beforeSend(xhr) {
-					xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-				},
-				success(result,status,xhr) {
-					loadAllStaff();
-				}
-			});
-		}
-	});*/
+	//add a role
+	function addRole() {
+		var form = document.getElementById('changeRoleForm');
+		$.ajax({
+			url: 'http://localhost:8000/staff/assign_' + form.role.value,
+			type: 'POST',
+			data: JSON.stringify({username : form.username.value}),
+			dataType: 'json',
+			beforeSend(xhr) {
+				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+			},
+			success(result,status,xhr) {
+				loadAllStaff();
+			}
+		});
+	}
 
 </script>
 
