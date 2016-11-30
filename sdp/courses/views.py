@@ -134,15 +134,15 @@ def addCourse(request):
                         category = Category.objects.filter(name=post_data['category'])
                         if category.count() == 0:
                             return JsonResponse(ERR_CATEGORY_DOES_NOT_EXIST)
-
+                        category = category[0]
                         return_data = staff[0].course_set.create(courseCode=course_code,
-                                                                 category=category[0],
+                                                                 category=category,
                                                                  isPublished=post_data['isPublished'],
                                                                  title=post_data['title'],
                                                                  description=post_data['description'])
                         # convert model to dict
                         return_data = model_to_dict(return_data)
-                        return_data['category_name'] = category[0].name
+                        return_data['category_name'] = category.name,
         except Exception as e:
             # unknown exception
             print(e)

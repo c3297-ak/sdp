@@ -5,14 +5,13 @@
     <h3>View Courses</h3>
     <div id="courseList"></div>
     <hr>
-    <h3>Add A Course</h3>
+    <h3>Add a Course</h3>
     <form id="addCourseForm">
         Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-        Category: <select name='catergoryFilter'><option value='' selected>All Categories</option></select><br>
-        Published: <select name='catergoryFilter'><option value='False' selected>False</option><option value='True' selected>True</option></select><br>
+        Category: <select name='category'><option value='' selected>All Categories</option></select><br>
         Title: <input type="text" name="title" value="Course Title"> <br>
         Description: <input type="text" name="description" value="Course Description"> <br>
-        <input type="button" value='Add Course' onclick="addCourse()">
+        <input type="button" value='Add Course' onclick="addCourse">
     </form>
 </div>
 
@@ -22,11 +21,10 @@
     <hr>
     <h3>Add Module</h3>
     <form id="addModuleForm">
-        Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
         Module Title: <input type="text" name="moduleTitle" value="Module Title"> <br>
         Sequence Number: <input type="text" name="sequenceNumber" value="Module Sequence Number"> <br>
     </form>
-    <button onclick="addModule()">Add Module</button>
+    <button>Add Module</button>
 </div>
 
 
@@ -43,7 +41,7 @@
         Content Title: <input type="text" name="contentTitle" value="Content Titlee"> <br>
         Content: <input type="text" name="content" value="Content"> <br>
     </form>
-    <button onclick="addComponent()">Add Component</button>
+    <button onclick="addComponent">Add Component</button>
 </div>
 
 <script type="text/javascript">
@@ -51,11 +49,14 @@
     $('#viewModules').hide();
     $('#viewComponents').hide();
     $('#viewCourses').show();
+    loadCourses();
 
     //page control logic
     $("#viewCourses").on('click','a',function(){
         $('#viewCourses').hide();
         $('#viewModules').show();
+        $('#viewModules button').attr('rel', $(this).attr('rel'));
+        loadModules($(this).attr('rel'));
     });
 
     $('#viewModules').on('click','h3 a', function() {
@@ -63,19 +64,37 @@
         $('#viewCourses').show();
     });
 
-    //load all courses created by this instructor
+    //load categories for course creation form
     $.ajax({
-        url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/courselist_instructor',
+        url: 'http://localhost:8000/courses/categories',
         type: 'GET',
         dataType: 'json',
-        success(result,status,xhr) {              
-            $.each(result.course_list, function(index, value) {
-                $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
-                if(!value.isPublished)
-                    $("#courseList").append("<button type='button'>Publish</button>");                
+        success(result,status,xhr) {    
+            $.each(result.all_categories, function(index, value) {
+                $('select[name=category]').append("<option value='" + value.name + "'>" + value.name + "</option>");          
             });
         }
     });
+
+    //load all courses created by this instructor
+    function loadCourses() {
+        $.ajax({
+            url: 'http://localhost:8000/courses',
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {      
+                $("#courseList").empty();
+                console.log(JSON.stringify(result))        
+                $.each(result.all_courses, function(index, value) {
+                    if (value.instructor == getCookie('staffId')) {
+                        $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br>Category: " + value.category_name + "<br>Description: " + value.description + '</p>');
+                        if(!value.isPublished)
+                            $("#courseList").append("<button rel='" + value.courseCode + "' type='button'>Publish</button>"); 
+                    }               
+                });
+            }
+        });
+    }
 
     //add a course
     function addCourse() {
@@ -87,7 +106,7 @@
                 instructor: getCookie('staffId'),
                 courseCode: form.courseCode.value,
                 category: form.category.value,
-                isPublished: form.isPublished.value,
+                isPublished: false,
                 title: form.title.value,
                 description: form.description.value
             }),
@@ -99,20 +118,57 @@
                 if (result.hasOwnProperty('failure'))
                     alert(result.message);
                 else {
-                    $("#courseList").append("<p><a href='#' rel='" + result.courseCode + "'>" + result.courseCode + ": " + result.title + "</a><br> Category: " + result.category + "</p>");
-                    if(!result.isPublished)
-                        $("#courseList").append("<button type='button'>Publish</button>");   
+                    $("#courseList").append("<p><a href='#' rel='" + result.courseCode + "'>" + result.courseCode + ": " + result.title + "</a><br>Category: " + result.category_name + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                    $("#courseList").append("<button rel='" + result.courseCode + "' type='button'>Publish</button>"); 
                 }
             }
         });
     }
 
-    function addModule() {
+    //publish a course
+    $('#courseList').on('click', 'button', function() {
+        cf = confirm("Please confirm that you want to publish this course");
+        if (cf) {
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/publish',
+                type: 'POST',
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    loadCourses();
+                }
+            });
+        }
+    });
+
+    //load all modules
+    function loadModules (courseID) {
         $.ajax({
-            url: "http://localhost:8000/courses/" + form.courseCode.value + "/addModule" + "?moduleTitle=" + form.moduleTitle.value + "&sequenceNumber=" + form.sequenceNumber.value,
+            url: 'http://localhost:8000/courses/' + courseID,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $("#moduleList").empty();
+                console.log(JSON.stringify(result));
+                $.each(result.modules, function(index, value) {
+                    $('#moduleList').append("<p><a href='#'>" + value.sequenceNumber + " : " + value.moduleTitle + "</a><br>Number of Component: " + value.component_count + "</p>");
+                });
+            }
+        });
+    }
+
+
+    //add modules
+    $('#viewModules').on('click', 'button', function() {
+        form = document.getElementById('addModuleForm');
+        $.ajax({
+            url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/addModule",
             type: 'POST',
             data: JSON.stringify({
-
+                moduleTitle: form.moduleTitle.value,
+                sequenceNumber: form.sequenceNumber.value
             }),
             dataType: 'json',
             beforeSend(xhr) {
@@ -122,23 +178,11 @@
                 if (result.hasOwnProperty('failure'))
                     alert(result.message);
                 else {
-
-                }    
+                    $('#moduleList').append("<p><a href='#'>" + result.sequenceNumber + " : " + result.moduleTitle + "</a><br>Number of Component: " + result.component_count + "</p>");
+                }   
             }
         });
-        /*var form = document.getElementById('addModuleForm');
-        var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/addModule" + "?moduleTitle=" + form.moduleTitle.value + "&sequenceNumber=" + form.sequenceNumber.value;
-
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
-                // Edit viewModules div with xmlHttp.responseText (in json)
-            }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();*/
-    }
+    });
 
     function addComponent() {
         $.ajax({
@@ -174,8 +218,5 @@
         xmlHttp.send();*/
     }
 </script>
-
-<hr>
-<p><b>Publish Course - Not suppoted yet</b></p>
 
 {% endblock %}

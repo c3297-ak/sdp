@@ -7,7 +7,7 @@
 <div id="viewCourses">
     <h3>All Courses</h3>
     <div id="courseList">
-        Filter by: <select name='catergoryFilter'><option value='' selected>All Categories</option></select>
+        Filter by: <select name='category'><option value='' selected>All Categories</option></select>
         <div id='courseFilteredList'></div>
     </div>
     <div id="courseDetails"></div>
@@ -38,6 +38,23 @@
         loadEnrollment();
     });
 
+    //load categories for course creation form
+    $.ajax({
+        url: 'http://localhost:8000/courses/categories',
+        type: 'GET',
+        dataType: 'json',
+        success(result,status,xhr) {    
+            $.each(result.all_categories, function(index, value) {
+                $('select[name=category]').append("<option value='" + value.name + "'>" + value.name + "</option>");          
+            });
+        }
+    });
+
+    //filtering logic
+     $('#courseList').on('change', 'select', function() {
+        loadCourses();
+     });
+
     //load all courses
     function loadCourses() {
         $.ajax({
@@ -50,10 +67,10 @@
                 $('#courseList').show();                
                 $.each(result.all_courses, function(index, value) {
                     if(value.isPublished)
-                        if ($('#courseList select').val() == '')
-                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");
-                        else if ($('#courseList select').val() == value.category) 
-                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category + "</p>");                   
+                        if ($('select[name=category]').val() == '')
+                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category_name + "</p>");
+                        else if ($('select[name=category]').val() == value.category_name) 
+                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category_name + "</p>");                   
                 });
             }
         });
@@ -69,7 +86,7 @@
                 $("#courseList").hide();
                 $("#courseDetails").empty();
                 $("#courseDetails").show();
-                $("#courseDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                $("#courseDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
                 $("#courseDetails").append("<button type='button' rel='" + result.courseCode + "'>Enroll</button>");
             }
         });
@@ -104,7 +121,7 @@
                 $("#enrollmentDetails").empty();
                 $("#enrollmentDetails").show();
                 $("#enrollmentDetails").append("<h3>Course Info</h3>")
-                $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
                 $("#enrollmentDetails").append("<h3>Modules</h3>");
             }
         });
