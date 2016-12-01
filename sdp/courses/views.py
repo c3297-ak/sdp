@@ -175,7 +175,7 @@ def update_course_contents(request, course_code):
                 return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
 
             course.courseCode = new_course_code
-            course.category = new_category
+            course.category = category[0]
             course.title = new_title
             course.description = new_description
             course.save()
@@ -183,7 +183,11 @@ def update_course_contents(request, course_code):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
-
+        
+        # return json response
+        return JsonResponse(return_data, safe=False)
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 # function to return the course description
 def courseDescription(request, course_code):
