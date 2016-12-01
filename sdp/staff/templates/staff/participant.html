@@ -26,6 +26,7 @@
     //*********************************
 
     var thisCourse;
+    var progress
     loadEnrollment();    
     $('#viewCourses').hide();
     $('#viewEnrollment').show();
@@ -68,7 +69,8 @@
         $("#enrollmentList").hide();
         $("#enrollmentDetails").show();
         thisCourse = $(this).attr('rel');
-        viewEnrollmentDetails();
+        progress = $(this).attr('ral');
+        loadModules();
     });
 
     $('#courseList').on('click', 'a', function() {
@@ -78,33 +80,10 @@
         viewCourseDetails();
     });
 
-    //reload when the category filter is changed
+    //reload courses when the category filter is changed
      $('#courseList').on('change', 'select', function() {
         loadCourses();
      });
-
-    //enroll in a course
-    $('#courseDetails').on('click', 'button', function () {
-        cf = confirm('Please confirm that you would like to enroll in this course.');
-        if (cf) {
-            $.ajax({
-                url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
-                type: 'POST',
-                data: JSON.stringify({staff_id : getCookie('staffId')}),
-                dataType: 'json',
-                beforeSend(xhr){
-                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-                },
-                success(result,status,xhr) {
-                    if (result.hasOwnProperty('failure'))
-                        alert(result.message);
-                    else
-                        window.location.reload();
-                }
-            });
-        }
-    });
-
 
     //*********************************
     // VIEW ENROLLMENT
@@ -118,15 +97,17 @@
             dataType: 'json',
             success(result,status,xhr){
                 $("#enrollmentList").empty();
+                console.log(JSON.stringify(result));
                 $.each(result.course_list, function(index, value) {
-                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");                    
+                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");
+                    $("#enrollmentList").append("<button type='button' rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop</button>");      
                 });
             }
         });
     }
 
     //view details of an enrolled course, including its components and modules
-    function viewEnrollmentDetails() {
+    function loadModules() {
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
             type: 'GET',
@@ -136,17 +117,105 @@
                 $("#enrollmentDetails").append("<h3>Course Info</h3>");
                 $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
                 $("#enrollmentDetails").append("<hr><h3>Modules & Components</h3>");
+                var count = 0;
                 $.each(result.modules, function(index, value) {
-                    $('#enrollmentDetails').append("<p><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b><br>Number of Component: " + value.component_count + "</p>");
-                    $.each(value.components, function(index, data) {
-                        $('#enrollmentDetails').append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
-                    });
+                    if (count <= progress) {
+                        $('#enrollmentDetails').append("<p><a href='#' rel='" + value.id + "'><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a></p>");
+                        $('#enrollmentDetails').append("<div id='" + value.id + "'></div>");
+                        count++;
+                    }
                 });
             }
         });
     }
 
+    //view components of this module
+    $('#enrollmentDetails').on('click','a',function() {
+        var thisModuleId = $(this).attr('rel');
+        if($('#' + thisModuleId).is(':empty') ) {
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + thisCourse,
+                type: 'GET',
+                dataType: 'json',
+                success(result,status,xhr) {
+                    $.each(result.modules, function(index, value) {
+                        if (value.id == thisModuleId)
+                        $.each(value.components, function(index, data) {
+                            $('#' + thisModuleId).append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
+                        });
+                    });
+                    $('#' + thisModuleId).append("<button type='button'>Next Modules</button>");
+                }
+            });
+        } else {
+            $('#' + thisModuleId).empty();
+        }
+    });
 
+    //mark this module as completed and reload all modules
+    $('#enrollmentDetails').on('click','button', function() {
+        progress++;
+        var course_id = $.ajax({
+            url: "http://localhost:8000/courses/" + thisCourse,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $.ajax({
+                    url: "http://localhost:8000/courses/update_course_progress",
+                    type: 'POST',
+                    data: JSON.stringify({
+                        course_id : result.id,
+                        staff_id : getCookie('staffId'),
+                        new_status : progress
+                    }),
+                    dataType: 'json',
+                    beforeSend(xhr){
+                        xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                    },
+                    success(data,status,xhr) {
+                        if (data.hasOwnProperty('failure'))
+                            alert(result.message);
+                        else
+                            loadModules();
+                    }
+                });
+            }
+        });
+    });
+
+    //drop a course    
+    $('#enrollmentList').on('click', 'button', function () {
+        var cf = confirm('Please confirm that you would like to drop this course.');
+        if (cf) {
+            var progress = $(this).attr('ral');
+            var course_id = $.ajax({
+                url: "http://localhost:8000/courses/" + $(this).attr('rel'),
+                type: 'GET',
+                dataType: 'json',
+                success(result,status,xhr) {
+                    $.ajax({
+                        url: "http://localhost:8000/courses/drop_course",
+                        type: 'POST',
+                        data: JSON.stringify({
+                            course_id : result.id,
+                            staff_id : getCookie('staffId'),
+                            new_status : progress
+                        }),
+                        dataType: 'json',
+                        beforeSend(xhr){
+                            xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                        },
+                        success(data,status,xhr) {
+                            if (data.hasOwnProperty('failure'))
+                                alert(result.message);
+                            else
+                                loadEnrollment();
+                        }
+                    });
+                }
+            });
+        }
+    });
 
     //*********************************
     // VIEW ALL COURSES
@@ -184,6 +253,28 @@
             }
         });
     }
+
+    //enroll in a course
+    $('#courseDetails').on('click', 'button', function () {
+        var cf = confirm('Please confirm that you would like to enroll in this course.');
+        if (cf) {
+            $.ajax({
+                url: "http://localhost:8000/courses/" + $(this).attr('rel') + "/enroll",
+                type: 'POST',
+                data: JSON.stringify({staff_id : getCookie('staffId')}),
+                dataType: 'json',
+                beforeSend(xhr){
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else
+                        window.location.reload();
+                }
+            });
+        }
+    });
 
 </script>
 
