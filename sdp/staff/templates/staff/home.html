@@ -1,5 +1,6 @@
 {% extends "staff/header.html" %}
 {% block content %}
+
     <div id="wrapper" class="active">
         <div id="sidebar-wrapper">
             <ul id="nav_menu" class="sidebar">
@@ -27,6 +28,7 @@
         </div>
     </div>
     </div>
+
     <script type="text/javascript">
 
         $("#menu-toggle").click(function(event) {
@@ -37,19 +39,7 @@
         if (getCookie("staffId") === "") {
             window.location.href = "loginPage";
         }
-    </script>
 
-    <!--<h1 style="text-align: center">AB Credit</h1>
-    <h2 style="text-align: center">SDP</h2>
-    <hr>
-
-    <div id="permissionButtons" style="text-align: center;"></div>
-
-    <hr>
-    
-    <div id="mainDisplay"></div>-->
-
-    <script type="text/javascript">
         staffId = getCookie('staffId');
 
         updateDisplay("participant");
@@ -74,7 +64,6 @@
                 $("#permissionButtons").append("<li><a onClick=\"logout()\">Log Out<i class='sub_icon fa-power-off fa'></i></a></li>");
             });
         });
-        //$("#permissionButtons").append("<button onClick=\"logout()\"> Log Out</button>");
 
         function logout() {
             document.cookie = "staffId="+";expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/";
