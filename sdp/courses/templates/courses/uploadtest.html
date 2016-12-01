@@ -7,8 +7,7 @@
     <input id='uploadedfile' type="file" placeholder="Upload file">
     <button onclick="uploadFunc()"> Upload </button>
     <button onclick="deleteFunc()"> Delete </button>
-    <button onclick="dowloadFunc()"> Download </button>
-
+    <a id="link" href="#"> The uploaded file </a>
     <script>
         function uploadFunc(){
             console.log("Calling upload")
@@ -16,22 +15,27 @@
             var ele = document.getElementById('uploadedfile');
             var form_data = new FormData();
             form_data.append('upload', ele.files[0]);
+            form_data.append('extra_info', 'whaddup');
             console.log(form_data.get('upload'));
-            xhr.open("POST", "uploadfiletest");
+            xhr.open("POST", "uploadfiletest", true);
+            xhr.onreadystatechange = function(){
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    console.log(data['file_path']);
+                    anchor = document.getElementById("link");
+                    anchor.setAttribute("href", data['file_path']);
+                    anchor.textContent = data['filename'];
+                }
+            }
             xhr.send(form_data);
         }
 
-        function deleteFunc(){
+        function deleteFunc() {
             var xhr = new XMLHttpRequest();
             var data = {"name": "Assignment3_questions.pdf"};
             xhr.open("POST", "deletefiletest");
             xhr.send(data);
-        }
-
-        function dowloadFunc(){
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "downloadtest");
-            xhr.send();
         }
     </script>
 </head>

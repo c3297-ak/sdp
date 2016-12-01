@@ -57,7 +57,6 @@ class Component(models.Model):
 
 class TextComponent(Component):
     contentType = TEXT
-    content = models.TextField()
 
     def __str__(self):
         return 'Text component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
@@ -65,7 +64,6 @@ class TextComponent(Component):
 
 class FileComponent(Component):
     contentType = FILE
-    content = models.FileField()
 
     def __str__(self):
         return 'File component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
@@ -73,15 +71,17 @@ class FileComponent(Component):
 
 class ImageComponent(Component):
     contentType = FILE
-    content = models.ImageField()
 
     def __str__(self):
         return 'Image component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
 
 
 class VideoComponent(Component):
+    contentType = VIDEO
+
     def __str__(self):
         return 'Video component with order: '+ str(self.order)+ ' in module with id: '+ str(self.module.id)
+
 
 class Enrollment(models.Model):
     isCompleted = models.BooleanField(default=False)

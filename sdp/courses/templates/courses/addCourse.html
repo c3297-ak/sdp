@@ -1,7 +1,12 @@
 {% extends "courses/header.html" %}
 {% block content %}
 	<p>Add Course</p>
-	<form>
-		<input type="submit" name="Add Course">
+	<form class="form-horizontal">
+        <div class="form-group row">
+            <label for="instructor" class="control-label col-xs-6"> Instructor </label>
+            <label id="instructor" class="col-xs-6">{{ form.instructor }}</label>
+        </div>
 	</form>
+    <a href="/uploads/Assignment3_questions.pdf"> Link </a>
+    <img src="/uploads/download.jpg" width="200">
 {% endblock %}

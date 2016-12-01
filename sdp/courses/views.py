@@ -9,37 +9,11 @@ import os
 
 from django.shortcuts import render
 
-base_upload_path = './uploads/'
+
+# --------------------------------------------------- CATEGORIES ----------------------------------------------------
 
 
-# helper function to check if course with courseCode exists
-def get_course(course_code):
-    courses = Course.objects.all().filter(courseCode=course_code)
-    if courses.count() > 0:
-        return courses[0]
-    return None
-
-
-# Create your views here.
-
-def index(request):
-    try:
-        if request.method == 'GET':
-            courses = []
-            course_set = Course.objects.filter(isPublished=True);
-            if course_set.count() > 0:
-                for course in course_set:
-                    data = model_to_dict(course)
-                    data['category_name'] = course.category.name
-                    courses.append(data)
-            return JsonResponse({"all_courses": courses})
-        else:
-            return JsonResponse(ERR_GET_EXPECTED)
-    except Exception as e:
-        print(e)
-        return JsonResponse(ERR_INTERNAL_ERROR)
-
-
+# add a new category to the database
 def add_category(request):
     # check if post request
     # post data must contain category_name
@@ -66,6 +40,7 @@ def add_category(request):
             return JsonResponse(ERR_INTERNAL_ERROR)
 
 
+# return all the categories in the database
 def get_categories(request):
     return JsonResponse({'all_categories': __get_all_categories()})
 
@@ -77,6 +52,7 @@ def __get_all_categories():
     return categories
 
 
+# remove a particular category from the database
 def remove_category(request):
     # check if post request
     # post data must contain category_name
@@ -102,6 +78,18 @@ def remove_category(request):
             return JsonResponse(ERR_INTERNAL_ERROR)
 
 
+# --------------------------------------------------- COURSES --------------------------------------------------------
+
+
+# helper function to check if course with courseCode exists
+def get_course(course_code):
+    courses = Course.objects.all().filter(courseCode=course_code)
+    if courses.count() > 0:
+        return courses[0]
+    return None
+
+
+# function to add a course to the database
 def addCourse(request):
     # check if post request
     # post data must contain courseCode, instructor(id), category, isPublished, title, description
@@ -154,6 +142,50 @@ def addCourse(request):
         return JsonResponse(ERR_POST_EXPECTED)
 
 
+# function to update the course contents
+def update_course_contents(request, course_code):
+    # only allows to update new_courseCode, new_category,
+    # new_title, new_description if not published. To publish course, use
+    # another url endpoint below
+    # post data must contain new_courseCode, new_category, new_title, new_description
+    if request.method == 'POST':
+        try:
+            # get request body and decode
+            decoded_body = request.body.decode('utf-8')
+            post_data = json.loads(decoded_body)
+
+            # check for presence of all fields
+            if not all_fields_present(post_data, ['new_courseCode', 'new_category', 'new_title', 'new_description']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+            new_course_code = post_data['new_courseCode']
+            new_category = post_data['new_category']
+            new_title = post_data['new_title']
+            new_description = post_data['new_description']
+
+            course = get_course(course_code)
+            if not course:
+                return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+            category = Category.objects.filter(name=new_category)
+            if category.count() == 0:
+                return JsonResponse(ERR_CATEGORY_DOES_NOT_EXIST)
+
+            if course.isPublished:
+                return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
+
+            course.courseCode = new_course_code
+            course.category = new_category
+            course.title = new_title
+            course.description = new_description
+            course.save()
+            return JsonResponse(model_to_dict(course))
+        except Exception as e:
+            print(e)
+            return JsonResponse(ERR_INTERNAL_ERROR)
+
+
+# function to return the course description
 def courseDescription(request, course_code):
     # get course associated. Return failure if none. Else return the course
     try:
@@ -172,7 +204,7 @@ def courseDescription(request, course_code):
             for module in sorted_module_set:  # for each module get the list of components
                 module = module[1]  # the second item of the tuple
                 module_dict = model_to_dict(module)
-                all_components = get_all_components(module)
+                all_components = __get_all_components(module)
                 module_dict['component_count'] = len(all_components)
                 module_dict['components'] = all_components
                 module_data.append(module_dict)  # append module info to module data list
@@ -183,6 +215,7 @@ def courseDescription(request, course_code):
     return JsonResponse(return_data)
 
 
+# function to publish a course
 def publishCourse(request, course_code):
     # get course associated, return err if does not exist. Set isPublished and save
     # return updated course
@@ -205,12 +238,54 @@ def publishCourse(request, course_code):
     return JsonResponse(return_data)
 
 
+# function to return all the courses in the database
+def index(request):
+    try:
+        if request.method == 'GET':
+            courses = []
+            course_set = Course.objects.filter(isPublished=True);
+            if course_set.count() > 0:
+                for course in course_set:
+                    data = model_to_dict(course)
+                    data['category_name'] = course.category.name
+                    courses.append(data)
+            return JsonResponse({"all_courses": courses})
+        else:
+            return JsonResponse(ERR_GET_EXPECTED)
+    except Exception as e:
+        print(e)
+        return JsonResponse(ERR_INTERNAL_ERROR)
+
+
+# function to remove a course
+def remove_course(request, course_code):
+    if request.method == 'POST':
+        course = get_course(course_code)
+        if not course:
+            return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+        if course.isPublished:
+            return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)  # do not allow to delete a published course
+
+        course.delete()
+        return JsonResponse({'success': True, 'message': 'Course has been deleted'})
+
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
+
+
+# -------------------------------------------------  MODULES  --------------------------------------------------------
+
+
+# returns the sorted modules for the course specified
 def __get_sorted_module_set(course):
     modules = []
     for module in course.module_set.all():
         modules.append((module.sequenceNumber, module))
     return sorted(modules)
 
+
+# add a module to the database
 def addModule(request, course_code):
     # post data must have moduleTitle, sequenceNumber
     try:
@@ -238,6 +313,32 @@ def addModule(request, course_code):
     return JsonResponse(return_data)  # ask AK what to return
 
 
+# update the module content in the database
+def update_module_content(request, course_code, module_seq):
+    module_seq = int(module_seq)
+    # POST data must contain moduleTitle only, for changing the sequence number there's another url endpoint.
+    if request.method == 'POST':
+        post_data = json.loads(request.body.decode('utf-8'))
+
+        if not all_fields_present(post_data, ['moduleTitle']):
+            return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+        course = get_course(course_code)
+        if not course:
+            return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+        module = course.module_set.filter(sequenceNumber=module_seq)
+        if module.count() == 0:
+            return JsonResponse(ERR_MOD_DOES_NOT_EXIST)
+        module = module[0]
+        module.moduleTitle = post_data['module']
+        module.save()
+        return JsonResponse(model_to_dict(module))
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
+
+
+# update the module order in the database
 def update_module_order(request, course_code):
     # POST data must contain module_sequences attribute
     # module_sequences is an array of objects, each with id (module's id) and sequenceNumber
@@ -270,7 +371,52 @@ def update_module_order(request, course_code):
     return JsonResponse(return_data)
 
 
-def get_all_components(module):
+# function to remove a module
+def remove_module(request, course_code, module_seq):
+    module_seq = int(module_seq)
+    if request.method == 'POST':
+        course = get_course(course_code)
+
+        if not course:
+            return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+        if course.isPublished:
+            return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)  # do not allow to delete once published
+
+        module = course.module_set.filter(sequenceNumber=module_seq)
+        if module.count() == 0:
+            return JsonResponse(ERR_MOD_DOES_NOT_EXIST)
+
+        module = module[0]
+        module.delete()
+        return JsonResponse({'success': True, 'message': 'Module has been deleted'})
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
+
+
+# ---------------------------------------------------COMPONENTS--------------------------------------------------------
+
+
+# returns the component given the module, content type and component id
+def __get_component(module, content_type, cmp_id):
+    if module:
+        if content_type == TEXT:
+            cmp = module.textcomponent_set.filter(pk=cmp_id)
+        elif content_type == IMG:
+            cmp = module.imagecomponent_set.filter(pk=cmp_id)
+        elif content_type == FILE:
+            cmp = module.filecomponent_set.filter(pk=cmp_id)
+        elif content_type == VIDEO:
+            cmp = module.videocomponent_set.filter(pk=cmp_id)
+
+        if cmp.count() == 0:
+            return None
+        return cmp[0]
+    return None
+
+
+# returns all the components for the module in sorted order
+def __get_all_components(module):
     # returns all components of the specified module in sorted
     # order, ascending
     try:
@@ -284,7 +430,7 @@ def get_all_components(module):
             components.append((data['order'], data))
         for text_component in module.textcomponent_set.all():
             data = model_to_dict(text_component)
-            components.append((data['order']), data)
+            components.append((data['order'], data))
         for video_component in module.videocomponent_set.all():
             data = model_to_dict(video_component)
             components.append((data['order'], data))
@@ -300,7 +446,8 @@ def get_all_components(module):
         return None
 
 
-def create_new_component(post_data, module):
+# helper function to create the appropriate component
+def __create_new_component(post_data, module):
     # create the appropriate type of component according to the contentType specified
     if post_data:
         content_type = post_data['contentType']
@@ -331,7 +478,8 @@ def create_new_component(post_data, module):
         return None
 
 
-def component_order_exists(module, order):
+# helper function to check if component with the order specified exists
+def __component_order_exists(module, order):
     # check if any of the components for the module have the order specified
     if module.filecomponent_set.filter(order=order).count() > 0 or module.imagecomponent_set.filter(
             order=order).count() > 0 or module.textcomponent_set.filter(
@@ -340,54 +488,23 @@ def component_order_exists(module, order):
     return False
 
 
+# helper function to update the component orders given the module and component sequence object
 def __update_component_order(module, component_sequences):
     # confidence on the front end code right here !!!. orders passed in must be unique
     for seq in component_sequences:
         content_type = seq['contentType']
         cmp_id = seq['component_id']
         new_order = seq['order']
-        # get the specific component based on type
-        if content_type == TEXT:
-            cmp = module.textcomponent_set.filter(pk=cmp_id)
-        elif content_type == IMG:
-            cmp = module.imagecomponent_set.filter(pk=cmp_id)
-        elif content_type == FILE:
-            cmp = module.filecomponent_set.filter(pk=cmp_id)
-        elif content_type == VIDEO:
-            cmp = module.videocomponent_set.filter(pk=cmp_id)
 
-        if cmp.count() > 0:
-            cmp = cmp[0]  # get the first element
-            cmp.order = new_order  # update order
-            cmp.save()
-    return get_all_components(module)  # return all updated modules in order
+        component = __get_component(module, content_type, cmp_id)
+
+        if component:
+            component.order = new_order  # update order
+            component.save()
+    return __get_all_components(module)  # return all updated modules in order
 
 
-def update_component_order(request, course_code, module_seq):
-    # POST data must contain component_sequences attribute
-    # component_sequences is an array of objects, each with id (module's id) and order and contentType
-    # eg. {component_id: id, order: order, contentType: type}
-    # Note: frontend check must be performed to ensure there are no component with duplicate order
-
-    post_data = json.loads(request.body.decode('utf-8'))
-    if not all_fields_present(post_data, ['component_sequences']):
-        return_data = ERR_REQUIRED_FIELD_ABS
-    else:
-        course = get_course(course_code)
-        if not course:
-            return_data = ERR_COURSE_DOES_NOT_EXIST
-        else:
-            module = course.module_set.filter(id=module_seq)
-            if module.count() == 0:
-                return_data = ERR_MOD_DOES_NOT_EXIST
-            else:
-                module = module[0]  # get the first element
-                updated_components = __update_component_order(module, post_data['component_sequences'])
-                return_data = {'updated_components': updated_components}
-
-    return JsonResponse(return_data)
-
-
+# adds the component to the database
 def addComponent(request, course_code, module_seq):
     module_seq = int(module_seq)
     # POST data must contain order, contentType, content, contentTitle
@@ -410,10 +527,10 @@ def addComponent(request, course_code, module_seq):
                 module = course.module_set.filter(sequenceNumber=module_seq)[0]
 
                 # return failure if same order already exists
-                if component_order_exists(module, post_data['order']):
+                if __component_order_exists(module, post_data['order']):
                     return JsonResponse(ERR_COMP_ORDER_EXISTS)
 
-                component = create_new_component(post_data, module)  # create the appropriate component
+                component = __create_new_component(post_data, module)  # create the appropriate component
                 if component:
                     return_data = model_to_dict(component)
                 else:
@@ -424,6 +541,99 @@ def addComponent(request, course_code, module_seq):
     return JsonResponse(return_data)
 
 
+# updates the component order in the database
+def update_component_order(request, course_code, module_seq):
+    module_seq = int(module_seq)
+    # POST data must contain component_sequences attribute
+    # component_sequences is an array of objects, each with id (component's id) and order and contentType
+    # eg. {component_id: id, order: order, contentType: type}
+    # Note: frontend check must be performed to ensure there are no component with duplicate order
+
+    post_data = json.loads(request.body.decode('utf-8'))
+    if not all_fields_present(post_data, ['component_sequences']):
+        return_data = ERR_REQUIRED_FIELD_ABS
+    else:
+        course = get_course(course_code)
+        if not course:
+            return_data = ERR_COURSE_DOES_NOT_EXIST
+        else:
+            module = course.module_set.filter(id=module_seq)
+            if module.count() == 0:
+                return_data = ERR_MOD_DOES_NOT_EXIST
+            else:
+                module = module[0]  # get the first element
+                updated_components = __update_component_order(module, post_data['component_sequences'])
+                return_data = {'updated_components': updated_components}
+
+    return JsonResponse(return_data)
+
+
+# uploads only the file to the server
+# to test
+def upload_component(request, course_code, module_seq):
+    if request.method == 'POST':
+        file = request.FILES['upload']
+        relative_path = os.path.join(str(course_code), str(module_seq), str(file))
+        destination_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+
+        directory = os.path.dirname(destination_path)
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+
+        destination = open(destination_path, 'wb+')
+        for chunk in file.chunks():
+            destination.write(chunk)
+        destination.close()
+        return JsonResponse({'success': True, 'file_path': relative_path,
+                             'filename': str(file)})
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
+
+
+# completely removes the component and its associated files if present
+# to test
+def remove_component(request, course_code, module_seq, component_id):
+    # POST body must contain the contentType of the component
+    if request.method == 'POST':
+        post_data = json.loads(request.body.decode('utf-8'))
+        if not all_fields_present(post_data, ['contentType']):
+            return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+        content_type = post_data['contentType']
+
+        course = Course.objects.filter(courseCode=course_code)
+        if course.count() == 0:
+            return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+        course = course[0]
+
+        if course.isPublished:
+            return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
+
+        module = course.module_set.filter(sequenceNumber=module_seq)
+        if module.count() == 0:
+            return JsonResponse(ERR_MOD_DOES_NOT_EXIST)
+        module = module[0]
+
+        component = __get_component(module, content_type, component_id)
+
+        if not component:
+            return JsonResponse(ERR_COMP_DOES_NOT_EXIST)
+
+        if content_type == TEXT:
+            component.delete()
+        else:
+            path = os.path.join(settings.MEDIA_ROOT, component.content)
+            if os.path.isfile(path):
+                os.remove(path)
+            component.delete()
+
+        return JsonResponse({'success': True, 'message': 'Component removed'})
+
+
+# ------------------------------------------ENROLL AND ENROLLMENT RECORDS -------------------------------------------
+
+
+# function to enroll in a course
 def enroll(request, course_code):
     # get participant and course associated. Return failure if either does not exist
     # Otherwise create enrollment and return newly created enrollment record
@@ -466,6 +676,7 @@ def enroll(request, course_code):
     return JsonResponse(return_data)
 
 
+# returns all the enrolled participants in a course
 def get_enrolled_participants(request, course_code):
     try:
         course = get_course(course_code)
@@ -486,6 +697,7 @@ def get_enrolled_participants(request, course_code):
     return JsonResponse(return_data)
 
 
+# returns all the participants who completed a course
 def get_completed_participants(request, course_code):
     try:
         course = get_course(course_code)
@@ -506,41 +718,7 @@ def get_completed_participants(request, course_code):
     return JsonResponse(return_data)
 
 
-# to test
-def upload_component(request, course_code, module_seq):
-    print('Files', request.FILES)
-    print('POST', request.POST)
-    print('Body', request.body)
-
-    return JsonResponse({'test': True})
-
-    if request.method == 'POST':
-        path = base_upload_path + str(course_code) + '/' + str(module_seq) + '/' + request.FILES['upload'].name
-        f = request.FILES['upload']
-        destination = open(path, 'wb+')
-        for chunk in f.chunks():
-            destination.write(chunk)
-        destination.close()
-        return_data = {'success': True, 'file_path': path}
-    else:
-        return_data = ERR_POST_EXPECTED
-    return JsonResponse(return_data)
-
-
-# to test
-def remove_component(request):
-    if request.method == 'POST':
-        post_data = json.loads(request.body.decode('utf-8'))
-        if not all_fields_present(post_data, ['courseCode', 'module_seq', 'filename']):
-            return_data = ERR_REQUIRED_FIELD_ABS
-        else:
-            path = base_upload_path + post_data['courseCode'] + '/' + post_data['module_seq'] + '/' + post_data[
-                'filename']
-            os.remove(path)
-            return_data = {'success': True}
-    return JsonResponse(return_data)
-
-
+# records the progress of a participant for the course
 def update_course_progress(request):
     # POST body must contain course_id, staff_id, new_status (the number of modules completed from start)
     if request.method == 'POST':
@@ -573,35 +751,116 @@ def update_course_progress(request):
     return JsonResponse(model_to_dict(enrollment))
 
 
+# function to drop a course
+def drop_course(request):
+    # POST body must contain course_id, staff_id, new_status (the number of modules completed from start)
+    try:
+        if request.method == 'POST':
+            post_data = json.loads(request.body.decode('utf-8'))
+
+            if not all_fields_present(post_data, ['course_id', 'staff_id', 'new_status']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+            course = Course.objects.filter(pk=post_data['course_id'])
+            if course.count() == 0:
+                return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+            staff = Staff.objects.filter(pk=post_data['staff_id'])
+            if staff.count() == 0:
+                return JsonResponse(ERR_STAFF_DOES_NOT_EXIST)
+
+            enrollment = Enrollment.objects.filter(course=course, participant=staff)
+            if enrollment.count() == 0:
+                return JsonResponse(ERR_ENROLLMENT_RECORD_DOES_NOT_EXIST)
+
+            # delete enrollment record
+            enrollment = enrollment[0]
+            enrollment.delete()
+            return JsonResponse({'success': True, 'message': 'Course successfully dropped'})
+        else:
+            return JsonResponse(ERR_POST_EXPECTED)
+    except Exception as e:
+        print(e)
+        return JsonResponse(ERR_INTERNAL_ERROR)
+
+
+# function to retake a course
+def retake_course(request):
+    # POST body must contain course_id, staff_id, new_status (the number of modules completed from start)
+    try:
+        if request.method == 'POST':
+            post_data = json.loads(request.body.decode('utf-8'))
+
+            if not all_fields_present(post_data, ['course_id', 'staff_id', 'new_status']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+
+            course = Course.objects.filter(pk=post_data['course_id'])
+            if course.count() == 0:
+                return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+            staff = Staff.objects.filter(pk=post_data['staff_id'])
+            if staff.count() == 0:
+                return JsonResponse(ERR_STAFF_DOES_NOT_EXIST)
+
+            enrollment = Enrollment.objects.filter(course=course, participant=staff)
+            if enrollment.count() == 0:
+                return JsonResponse(ERR_ENROLLMENT_RECORD_DOES_NOT_EXIST)
+
+            enrollment = enrollment[0]
+            if not enrollment.isCompleted:
+                return JsonResponse(ERR_CANNOT_RETAKE)
+
+            # figure this part out  <--------------------------------------------------------------
+            enrollment.modules_completed = 0
+            enrollment.save()
+            return JsonResponse(model_to_dict(enrollment))
+        else:
+            return JsonResponse(ERR_POST_EXPECTED)
+    except Exception as e:
+        print(e)
+        return JsonResponse(ERR_INTERNAL_ERROR)
+
+# --------------------------------------------------EXPERIMENTAL (REMOVE) ---------------------------------------
+
 def uploadTest(request):
     return render(request, 'courses/uploadtest.html')
 
 
-basepath = 'uploads/'
+from django.conf import settings
+
+
 def uploadfiletest(request):
-    print(request.FILES)
-    file = request.FILES['upload']
-    destination = open(basepath + str(file), 'wb+')
-    for chunk in file.chunks():
-        destination.write(chunk)
-    destination.close()
-    return JsonResponse({'success': True, 'link': basepath+str(file)})
+    if request.method == 'POST':
+        print(request.POST['extra_info'])
+        file = request.FILES['upload']
+        destination = open(os.path.join(settings.MEDIA_ROOT, str(file)), 'wb+')
+        for chunk in file.chunks():
+            destination.write(chunk)
+        destination.close()
+        return JsonResponse({'success': True, 'file_path': os.path.join(settings.MEDIA_URL, str(file)),
+                             'filename': str(file)})
+
 
 def removefiletest(request):
     # post_data = json.loads(request.body.decode('utf-8'))
-    path = basepath + 'Assignment3_questions.pdf'
+    path = os.path.join(settings.MEDIA_ROOT, 'Assignment3_questions.pdf')
     os.remove(path)
     return JsonResponse({'success': True})
 
-def downloadtest(request):
-    filename = basepath + 'Assignment3_questions.pdf'
+
+def add_course(request):
+    from .forms.CreateCourse import CreateCourse
+    from django.http import HttpResponseRedirect
+
+    if request.method == 'POST':
+        form = CreateCourse(request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect('/thanks')
+    else:
+        form = CreateCourse()
+    return render(request, 'courses/addCourse.html', {'form': form})
+
+
+def thanks(response):
     from django.http import HttpResponse
-    from django.utils.encoding import smart_str
-
-    response = HttpResponse(
-        content_type='application/force-download')  # mimetype is replaced by content_type for django 1.7
-    response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(filename)
-    response['X-Sendfile'] = smart_str(filename)
-
-
-    return response
+    return HttpResponse('<h1> Thanks</h1>')
