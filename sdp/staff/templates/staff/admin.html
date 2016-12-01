@@ -7,71 +7,75 @@
 	</div>
 	<hr>
 	<div id='viewStaff' class="row">
-		<h3 align="center">Change Role</h3>
-		<form id='changeRoleForm' class="form-inline">
+		<h3 align="center">Assign Permission</h3>
+		<form id='changeRoleForm' class="form-inline" align="center">
 			<div class="col-md-12">
-			<div class="form-group">
-				<label for="theUsername">Username:</label>
-				<input type="text" class="form-control" id="theUsername" placeholder="Enter Username" name="username" value="">
-			
-			<!--<div class="form-control">-->
-				<label for="theRole">Role:</label>
-				<select class="form-control" id="theRole" name="role">
-					<option value='admin' selected>Administrator</option>
-					<option value='instructor'>Instructor</option>
-					<option value='hr'>Human Resource</option>
-				</select>
-
-				<input class="btn btn-primary btn-block" type='button' onclick='addRole()' value='Add Role'>
-			</div>
-			
+				<div class="form-group">
+					<label for="theUsername">Username:</label>
+					<input type="text" class="form-control" id="theUsername" placeholder="Enter Username" name="username" value="">
+					<label for="theRole">Role:</label>
+					<select class="form-control" id="theRole" name="role">
+						<option value='admin' selected>Administrator</option>
+						<option value='instructor'>Instructor</option>
+						<option value='hr'>Human Resource</option>
+					</select>
+					<input class="btn btn-primary btn-block" type='button' onclick='addRole()' value='Add Role'>
+				</div>
 			</div>
 		</form>
-		</div>	
-	</div>
-	<hr>
-	<div id='staffTable' class="row">
+
+		<div id='staffTable' class="row">
+			<div class="col-md-12">
+				<h3 align="center">Permission Table</h3>
+				<table class="table table-bordered" style="border-color: white">
+					<thead>
+						<tr>
+							<th>Username</th>
+							<th>Administrator</th>
+							<th>Instructor</th>
+							<th>Participant</th>
+							<th>Human Resources</th>
+						</tr>
+					</thead>
+					<tbody id="eachStaffPermission">
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</div>	
+</div>
+	
+
+<div id='viewCategories' class="row" style="margin-left: 10px; margin-right: 10px">
+<!-- ; margin-right: 10px; -->
+	<h3 align="center">Manage Category</h3>
+	<form id='categoryForm' class="form-inline" align="center">
 		<div class="col-md-12">
-			<h3 align="center">Staff Table</h3>
-			<table class="table table-bordered" style="border-color: white">
+			<div class="form-group">
+				<label for="theUsername">Category Name:</label>
+				<input type="text" class="form-control" id="category_name" placeholder="Enter Category Name" name="category_name" value="">
+				<input class="btn btn-primary btn-block" type='button' onclick='addCategory()' value='Add Category'>
+				<input class="btn btn-primary btn-block" type='button' onclick='removeCategory()' value='Remove Category'>
+			</div>
+		</div>
+	</form>
+
+	<div id='categoryTable' class="row">
+		<div class="col-md-12">
+			<h3 align="center">Category Table</h3>
+			<table class="table table-bordered" style="border-color: transparent">
 				<thead>
 					<tr>
-						<th>Username</th>
-						<th>Administrator</th>
-						<th>Instructor</th>
-						<th>Participant</th>
-						<th>Human Resources</th>
+						<th>Category Name</th>
 					</tr>
 				</thead>
-				<tbody id="eachStaffPermission">
+				<tbody id="eachCategory">
 				</tbody>
 			</table>
 		</div>
 	</div>
-	<hr>
-	<div id="staffList">
-		<h3 align="center">Staff List</h3>
-		<div id='admins'>
-			<b>Administrators</b>
-			<div id='administratorList'></div>
-		</div>
-		<div id='instructors'>
-			<b>Instructors</b>
-			<div id='instructorList'></div>
-		</div>
-		<div id='participants'>
-			<b>Participants</b>
-			<div id='participantList'></div>
-		</div>
-		<div id='hrs'>
-			<b>Human Resources</b>
-			<div id='humanResourceList'></div>
-		</div>
-	</div>
 </div>
-	
-
-<div id='viewCatogories'></div>
 
 <script type='text/javascript'>
 	//initial state
@@ -88,37 +92,9 @@
     $('#viewCategoryBtn').on('click',function(){
         $('#viewStaff').hide();
         $('#viewCategories').show();
+        loadAllCategory();
     });
 
-	//load staff function
-	function loadStaff(staffRole) {
-		$.ajax({
-        	url: 'http://localhost:8000/staff/' + staffRole + 's',
-        	type: 'GET',
-        	dataType: 'json',
-        	success(result,status,xhr) {
-            	console.log(JSON.stringify(result));
-            	var data;
-            	switch (staffRole) {
-            		case 'administrator':
-            			data = result.all_administrators;
-            			break;
-            		case 'instructor':
-            			data = result.all_instructors;
-            			break;
-            		case 'participant':
-            			data = result.all_participants;
-            			break;
-            		case 'humanResource':
-            			data = result.all_humanResources;
-            			break;
-            	}          
-            	$.each(data, function(index, value) {
-            		$('#' + staffRole + 'List').append("<p>" + value.username + "</p>");
-            	});
-        	}
-    	});
-	}
 
 	//load table
 	function loadStaffTable() {
@@ -127,9 +103,8 @@
         	type: 'GET',
         	dataType: 'json',
         	success(result,status,xhr) {
-            	console.log(JSON.stringify(result));
-            	var data;
-            	data = result.staffs;
+		        $( "#eachStaffPermission" ).empty();
+            	var data = result.staffs;
 
             	$.each(data, function(index, value) {
             		$.ajax({
@@ -138,7 +113,6 @@
 		        	async: 'false',
 		        	dataType: 'json',
 		        	success(result,status,xhr) {
-		            	console.log(JSON.stringify(result));
 		            	var element = document.createElement('tr');
 		            	jQuery('<tr/>', {
 		            		id: 'value'+index,
@@ -176,17 +150,8 @@
     	});
 	}
 
-
 	//load all staff
 	function loadAllStaff() {
-		$('#administratorList').empty();
-		$('#instructorList').empty();
-		$('#participantList').empty();
-		$('#humanResourceList').empty();
-		loadStaff('administrator');
-		loadStaff('instructor');
-		loadStaff('participant');
-		loadStaff('humanResource');
 		loadStaffTable();
 	}
 
@@ -217,6 +182,54 @@
 				loadAllStaff();
 			}
 		});
+	}
+
+	function addCategory() {
+		var input = document.getElementById('category_name');
+		$.ajax({
+			url: 'http://localhost:8000/courses/addCategory',
+			type: 'POST',
+			data: JSON.stringify({category_name : input.value}),
+			dataType: 'json',
+			beforeSend(xhr) {
+				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+			},
+			success(result,status,xhr) {
+				loadAllCategory();
+			}
+		});
+	}
+
+	function removeCategory() {
+		var input = document.getElementById('category_name');
+		$.ajax({
+			url: 'http://localhost:8000/courses/category/remove',
+			type: 'POST',
+			data: JSON.stringify({category_name : input.value}),
+			dataType: 'json',
+			beforeSend(xhr) {
+				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+			},
+			success(result,status,xhr) {
+				loadAllCategory();
+			}
+		});
+	}
+
+	function loadAllCategory() {
+		$.ajax({
+			url: 'http://localhost:8000/courses/categories',
+			type: 'GET',
+			dataType: 'json',
+			success(result,status,xhr) {
+				$('#eachCategory').empty();
+				var data = result.all_categories;
+				for (c in data) {
+					$('#eachCategory').append("<tr><td>"+result.all_categories[c].name+"</td><tr>");
+				}
+			}
+		});
+
 	}
 
 </script>

@@ -6,6 +6,28 @@ from courses.models import Enrollment, Course
 from sdp.utilities import *
 import json
 
+def courseCompleted (request, staff_username):
+    try:
+        if request.method == 'GET':
+            staff = Staff.objects.filter(username=staff_username)
+            if staff.count() == 0:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+            staff = staff[0]
+
+            completed_enrolls = []
+            enrollments = Enrollment.objects.filter(isCompleted=True, participant=staff)
+            for enrollment in enrollments:
+                course = model_to_dict(enrollment.course)
+                completed_enrolls.append(course)
+            return_data = {'completed_enrolls': completed_enrolls}
+            
+        else:
+            return_data = ERR_GET_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
 def staffs(request):
     try:
         if request.method == 'GET':
