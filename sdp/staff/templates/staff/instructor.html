@@ -1,143 +1,229 @@
 {% extends "staff/header.html" %}
 {% block content %}
-<script>instructorID = getCookie("staffId");</script>
 
-<p><b>View Course</b></p>
 <div id="viewCourses">
-    <!-- To be completed -->
+    <h3>View Courses</h3>
+    <div id="courseList"></div>
+    <hr>
+    <h3>Add a Course</h3>
+    <form id="addCourseForm">
+        Course Code: <input type="text" name="courseCode" placeholder="Course Code"> <br>
+        Category: <select name='category'><option value='' selected>All Categories</option></select><br>
+        Title: <input type="text" name="title" placeholder="Course Title"> <br>
+        Description: <input type="text" name="description" placeholder="Course Description"> <br>
+        <input type="button" value='Add Course' onclick="addCourse()">
+    </form>
 </div>
-<script type="text/javascript">
-    console.log("Load Courses");
-    var endpoint = "http://localhost:8000/courses/";
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-            console.log(xmlHttp.responseText);
-            var data = JSON.parse(xmlHttp.responseText);
-            $.each(data.all_courses, function(index, value) {
-                if (value.instructor === instructorID) {
-                    $("#viewCourses").append("<h3>" + value.courseCode + ": " + value.title + "</h3><p> Category: " + value.category + "</p><p> Description: " + value.description + "</p>");
-                
-                    if (!value.isPublished)
-                        $("#viewCourses").append("<button type='button'>Publish</button>");
 
-                    $("#viewCourses").append("<br>");
+<div id="viewModCom">
+    <h3><a href='#'>View Courses</a> / Modules and Components</h3>
+    <div id='modComList'></div>
+
+    <hr>
+
+    <h3>Add Module</h3>
+    <form id="addModuleForm">
+        Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
+        Sequence Number: <input type="text" name="sequenceNumber" placeholder="Module Sequence Number"> <br>
+        <input type="button" value='Add Module' onclick="addModule()">
+    </form>
+
+    <hr>
+
+    <h3>Add Component</h3>
+    <form id="addComponentForm">
+        Module Number: <input type="text" name="moduleSeq" placeholder="Module Number"> <br>
+        Order: <input type="text" name="order" placeholder="Component Order"> <br>
+        Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
+        Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
+        Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
+        <input type="button" value='Add Component' onclick="addComponent()">
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    //*********************************
+    // INITIAL STATE
+    //*********************************
+
+    var thisCourse;
+    $('#viewModCom').hide();
+    $('#viewComponents').hide();
+    $('#viewCourses').show();
+    loadCourses();
+
+    //load categories for course creation form
+    $.ajax({
+        url: 'http://localhost:8000/courses/categories',
+        type: 'GET',
+        dataType: 'json',
+        success(result,status,xhr) {    
+            $.each(result.all_categories, function(index, value) {
+                $('select[name=category]').append("<option value='" + value.name + "'>" + value.name + "</option>");          
+            });
+        }
+    });
+
+
+    //*********************************
+    // PAGE CONTROL LOGIC
+    //*********************************
+
+    $('#viewModCom').on('click','h3 a', function() {
+        $('#viewModCom').hide();
+        $('#viewCourses').show();
+    });
+
+    $("#viewCourses").on('click','a',function(){
+        $('#viewCourses').hide();
+        $('#viewModCom').show();
+        thisCourse = $(this).attr('rel');
+        loadModCom();
+    });
+
+    //publish a course
+    $('#courseList').on('click', 'button', function() {
+        cf = confirm("Please confirm that you want to publish this course");
+        if (cf) {
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/publish',
+                type: 'POST',
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    loadCourses();
                 }
-            });            
+            });
         }
-    }
-    xmlHttp.open("GET", endpoint, true);
-    xmlHttp.send();
-</script>
+    });
 
-<hr>
-<p><b>Add Course</b></p>
-<form id="addCourseForm">
-    Instructor: <input type="text" name="instructor" value="Instructor Name"> <br>
-    Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-    Category: <input type="text" name="category" value="Course Category"> <br>
-    Published: <input type="text" name="isPublished" value="False"> <br>
-    Title: <input type="text" name="title" value="Course Title"> <br>
-    Description: <input type="text" name="description" value="Course Description"> <br>
-    <button type="button" onclick="addCourse()"> Add Course </button>
-</form>
-<script type="text/javascript">
-    function addCourse() {
-        console.log('Adding course');
-        var form = document.getElementById('addCourseForm');
-        var endpoint = "http://localhost:8000/courses/addCourse";
-        var data = {
-            instructor: form.instructor.value,
-            courseCode: form.courseCode.value,
-            category: form.category.value,
-            isPublished: form.isPublished.value,
-            title: form.title.value,
-            description: form.description.value
-        };
+    //*********************************
+    // VIEW COURSES
+    //*********************************
 
-        console.log('data_dump');
-        console.log(data);
-
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
-                // Edit viewCourses div with xmlHttp.responseText (in json)
+    //load all courses created by this instructor
+    function loadCourses() {
+        $.ajax({
+            url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/courselist_instructor',
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {      
+                $("#courseList").empty();
+                console.log(JSON.stringify(result))        
+                $.each(result.course_list, function(index, value) {
+                    $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br>Category: " + value.category_name + "<br>Description: " + value.description + '</p>');
+                    if(!value.isPublished)
+                        $("#courseList").append("<button rel='" + value.courseCode + "' type='button'>Publish</button>");             
+                });
             }
-        }
-        xmlHttp.open("POST", endpoint, true);
-        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
-        xmlHttp.send(JSON.stringify(data));
-        return false;
+        });
     }
-</script>
 
-<hr>
-<p><b>View Modules</b></p>
-<div id="viewModules">
-    <!-- To be completed -->
-</div>
+    //add a course
+    function addCourse() {
+        var form = document.getElementById('addCourseForm');
+        $.ajax({
+            url: 'http://localhost:8000/courses/addCourse',
+            type: 'POST',
+            data: JSON.stringify({
+                instructor: getCookie('staffId'),
+                courseCode: form.courseCode.value,
+                category: form.category.value,
+                isPublished: false,
+                title: form.title.value,
+                description: form.description.value
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadCourses();
+                }
+            }
+        });
+    }
 
-<hr>
-<p><b>Add Module</b></p>
-<form id="addModuleForm">
-    Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-    Module Title: <input type="text" name="moduleTitle" value="Module Title"> <br>
-    Sequence Number: <input type="text" name="sequenceNumber" value="Module Sequence Number"> <br>
-</form>
-<button onclick="addModule()">Add Module</button>
-<script>
+
+
+    //*********************************
+    // VIEW COMPONENTS AND MODULES
+    //*********************************
+
+    //display modules and components
+    function loadModCom() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $("#modComList").empty();
+                console.log(JSON.stringify(result));
+                $.each(result.modules, function(index, value) {
+                    $('#modComList').append("<p><b>" + value.sequenceNumber + " : " + value.moduleTitle + "</b><br>Number of Component: " + value.component_count + "</p>");
+                    $.each(value.components, function(index, data) {
+                        $('#modComList').append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
+                    });
+                });
+            }
+        });
+    }
+
+    //add modules
     function addModule() {
         var form = document.getElementById('addModuleForm');
-        var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "/addModule" + "?moduleTitle=" + form.moduleTitle.value + "&sequenceNumber=" + form.sequenceNumber.value;
-
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
-                // Edit viewModules div with xmlHttp.responseText (in json)
+        $.ajax({
+            url: "http://localhost:8000/courses/" + thisCourse + "/addModule",
+            type: 'POST',
+            data: JSON.stringify({
+                moduleTitle: form.moduleTitle.value,
+                sequenceNumber: form.sequenceNumber.value
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadModCom();
+                }   
             }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        });
     }
-</script>
 
-<hr>
-<p><b>View Components</b></p>
-<div id="viewComponents">
-    <!-- To be completed -->
-</div>
-
-<hr>
-<p><b>Add Component</b></p>
-<form id="addComponentForm">
-    Course Code: <input type="text" name="courseCode" value="Course Code"> <br>
-    Module Title: <input type="text" name="moduleTitle" value="Module Title"> <br>
-    Order: <input type="text" name="order" value="Component Order"> <br>
-    Content Type: <input type="text" name="contentType" value="Content Type"> <br>
-    Content Title: <input type="text" name="contentTitle" value="Content Titlee"> <br>
-    Content: <input type="text" name="content" value="Content"> <br>
-</form>
-<button onclick="addComponent()">Add Component</button>
-<script>
     function addComponent() {
         var form = document.getElementById('addComponentForm');
-        var endpoint = "http://localhost:8000/courses/" + form.courseCode.value + "modules/" + form.moduleTitle.value + "/addComponent" + "?order=" + form.order.value + "&contentType=" + form.contentType.value + "&contentTitle=" + form.contentTitle.value + "&content=" + form.content.value;
-
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-                console.log(xmlHttp.responseText);
-                // Edit viewCompnents div with xmlHttp.responseText (in json)
+        $.ajax({
+            url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + form.moduleSeq.value + "/addComponent",
+            type: 'POST',
+            data: JSON.stringify({
+                order: form.order.value,
+                contentType: form.contentType.value,
+                content: form.content.value,
+                contentTitle: form.contentTitle.value
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadModCom();
+                }                
             }
-        }
-        xmlHttp.open("GET", endpoint, true);
-        xmlHttp.send();
+        });
     }
 </script>
-
-<hr>
-<p><b>Publish Course - Not suppoted yet</b></p>
 
 {% endblock %}

@@ -1,34 +1,18 @@
 <!DOCTYPE html>
+{% load staticfiles %}
 <html>
 <head>
-	<title>AB Credit - SDP</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script>
-	function setCookie(cname, cvalue, exhours) {
-    	var d = new Date();
-    	d.setTime(d.getTime() + (exhours*60*60*1000));
-    	var expires = "expires="+ d.toUTCString();
-    	document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-	}
-
-	function getCookie(cname) {
-    	var name = cname + "=";
-    	var ca = document.cookie.split(';');
-    	for(var i = 0; i <ca.length; i++) {
-        	var c = ca[i];
-        	while (c.charAt(0)==' ') {
-            	c = c.substring(1);
-        	}
-        	if (c.indexOf(name) == 0) {
-            	return c.substring(name.length,c.length);
-        	}
-    	}
-    	return "";
-	}
-	</script>
+    <title>AB Credit - SDP</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="script" href="{% static 'css/main.css' %}">
+    <script src="{% static 'js/header.js' %}"></script>
 </head>
 <body>
-	{% block content %}
-	{% endblock %}
+    {% block content %}
+    {% endblock %}
 </body>
 </html>

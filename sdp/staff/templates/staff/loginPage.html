@@ -1,96 +1,156 @@
 {% extends "staff/header.html" %}
 {% block content %}
-    <p><b>Login</b></p>
-    <form id="login">
-        Username: <input type="text" name="username" value="username"> <br>
-        Password: <input type="text" name="password" value="password"> <br>
-        <button type="button" onclick="login()"> Login </button>
-        <span id="loginStatus"></span>
-    </form>
-    <script type="text/javascript">
-        function login() {
-        	var form = document.getElementById('login');
-        	if (form.username.value != "" && form.password.value != "") {
-	            var endpoint = "http://localhost:8000/staff/login";
-	            var data = {
-	                username: form.username.value,
-	                password: form.password.value,
-	            };
+	<title>SDP</title>
+	<div class="container">
+		<div class="row main">
+			<div class="panel-heading">
+				<div class="panel-title text-center">
+					<h1 class="title">Staff Development Platform</h1>
+					</hr>
+				</div>
+			</div>
+			<div class="main-login main-center">
+				<form id="theForm">
+					<div id="theName" class="form-group">
+						<label for="fname" class="cols-sm-2 control-label">Name</label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa-user fa" aria-hidden="true"></i></span>
+								<input type="text" class="form-control" name="fname" value="" placeholder="Enter your name"/>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="username" class="cols-sm-2 control-label">Username</label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa-users fa" aria-hidden="true"></i></span>
+								<input type="text" class="form-control" name="username" value="" placeholder="Enter your username"/>
 
-	            var xmlHttp = new XMLHttpRequest();
-	            xmlHttp.onreadystatechange = function () {
-	                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-	                    response = JSON.parse(xmlHttp.responseText);
-	                    if (response.failure == null && form.username.value != "" && form.password.value != "") {
-	                        var status = document.getElementById('loginStatus');
-	                        status.innerHTML = "";
-	                        setCookie('staffId',response.staffId,1);
-	                        window.location.href = "home";
-	                    } else {
-	                    	form.username.value = "username";
-	                    	form.password.value = "password";
-	                        var status = document.getElementById('loginStatus');
-	                        status.innerHTML = " Login Fail";
-	                    }
-	                }
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="password" class="cols-sm-2 control-label">Password</label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa-lock fa-lg fa" aria-hidden="true"></i></span>
+								<input type="password" class="form-control" name="password" value="" placeholder="Enter your password"/>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<button id="login-registerBtn" type="button" onclick="login()" class="btn btn-primary btn-lg btn-block login-button">Login</button>
+						<span id="registerStatus"></span>
+						<span id="loginStatus"></span>
+					</div>
+					<div class="login-register" onclick="makeToRegister()">
+						<a id="switchLabel" href="#">Don't have an account? Click here to register!</a>
+					</div>
+
+				</form>
+	    <script type="text/javascript">
+	    	$(document).ready(function () {
+	    		$("#theName").hide();
+	    	})
+	    	function login() {
+				var form = document.getElementById('theForm');
+	    		if (form.username.value != "" && form.password.value != "") {
+	            	var endpoint = "http://localhost:8000/staff/login";
+		            var data = {
+		                username: form.username.value,
+		                password: form.password.value,
+		            };
+
+		            var xmlHttp = new XMLHttpRequest();
+		            xmlHttp.onreadystatechange = function () {
+		                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+		                    response = JSON.parse(xmlHttp.responseText);
+		                    if (response.failure == null && form.username.value != "" && form.password.value != "") {
+		                        var status = document.getElementById('loginStatus');
+		                        status.innerHTML = "";
+		                        setCookie('staffId',response.staffId,1);
+		                        window.location.href = "home";
+		                    } else {
+		                    	//form.username.value = "username";
+		                    	//form.password.value = "password";
+		                        //var status = document.getElementById('loginStatus');
+		                        //status.innerHTML = " Login Fail";
+		                       	alert("Login failed!");
+
+		                    }
+		            }
 	            }
 	            xmlHttp.open("POST", endpoint, true);
 	            xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
 	            xmlHttp.send(JSON.stringify(data));
 	            return false;
 	        } else {
-	        	form.username.value = "username";
-            	form.password.value = "password";
-                var status = document.getElementById('loginStatus');
-                status.innerHTML = " Login Fail";
-	        }
-        }
-    </script>
-    <hr>
-    <p><b>Register</b></p>
-    <form id="register">
-        Username: <input type="text" name="username" value="username"> <br>
-        Password: <input type="text" name="password" value="password"> <br>
-        <button type="button" onclick="register()"> Register </button>
-        <span id="registerStatus"></span>
-    </form>
-    <script type="text/javascript">
-        function register() {
-		    var form = document.getElementById('register');
-        	if (form.username.value != "" && form.password.value != "" && form.username.value != "username" && form.password.value != "password") {
-		        var endpoint = "http://localhost:8000/staff/register";
-		        var data = {
-		            username: form.username.value,
-		            password: form.password.value,
-		        };
+	        	//form.username.value = "username";
+	        	//form.password.value = "password";
+	            //var status = document.getElementById('loginStatus');
+	            //status.innerHTML = " Login Fail";
+	            alert("Login failed!");
 
-		        var xmlHttp = new XMLHttpRequest();
-		        xmlHttp.onreadystatechange = function () {
-		            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-		                response = JSON.parse(xmlHttp.responseText);
-		                if (response.failure == null) {
-		                    var status = document.getElementById('registerStatus');
-		                    status.innerHTML = "";
-		                    setCookie('staffId',response.id,1);
-		                    window.location.href = "home";
-		                } else {
-		                	form.username.value = "username";
-		                	form.password.value = "password";
-		                    var status = document.getElementById('registerStatus');
-		                    status.innerHTML = " Register Fail";
-		                }
-		            }
-		        }
-		        xmlHttp.open("POST", endpoint, true);
-		        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
-		        xmlHttp.send(JSON.stringify(data));
-		        return false;
-        	} else {
-            	form.username.value = "username";
-            	form.password.value = "password";
-                var status = document.getElementById('registerStatus');
-                status.innerHTML = " Register Fail";
-            }
-        }
-    </script>
+	        	}
+			}
+	        function register() {
+			    var form = document.getElementById('theForm');
+	        	if (form.username.value != "" && form.password.value != "" && form.username.value != "username" && form.password.value != "password") {
+			        var endpoint = "http://localhost:8000/staff/register";
+			        var data = {
+			            username: form.username.value,
+			            password: form.password.value,
+			        };
+
+			        var xmlHttp = new XMLHttpRequest();
+			        xmlHttp.onreadystatechange = function () {
+			            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+			                response = JSON.parse(xmlHttp.responseText);
+			                if (response.failure == null) {
+			                    var status = document.getElementById('registerStatus');
+			                    status.innerHTML = "";
+			                    setCookie('staffId',response.id,1);
+			                    window.location.href = "home";
+			                } else {
+			                	//form.username.value = "username";
+			                	//form.password.value = "password";
+			                    //var status = document.getElementById('registerStatus');
+			                    //status.innerHTML = " Register Fail";
+			                    alert("Register failed!");
+			                }
+			            }
+			        }
+			        xmlHttp.open("POST", endpoint, true);
+			        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
+			        xmlHttp.send(JSON.stringify(data));
+			        return false;
+	        	} else {
+	            	//form.username.value = "username";
+	            	//form.password.value = "password";
+	                //var status = document.getElementById('registerStatus');
+	                //status.innerHTML = " Register Fail";
+	                alert("Register failed!");
+	            }
+	        }
+
+	        function makeToRegister() {
+	        	$("#theName").show();
+	        	$("#login-registerBtn").attr("onclick","register()");
+				$("#login-registerBtn").text("Register");
+				$(".login-register").attr("onclick", "makeToLogin()");
+				$("#switchLabel").text("Already have an account? Click here to log in!");
+	        }
+
+	        function makeToLogin() {
+	        	$("#theName").val("");
+	    		$("#theName").hide();
+		    	$("#login-registerBtn").attr("onclick","login()");
+		    	$("#login-registerBtn").text("Login");
+		    	$(".login-register").attr("onclick", "makeToRegister()");
+		   		$("#switchLabel").text("Don't have an account? Click here to register!");
+
+	        }
+	    </script>
+	</div>
 {% endblock %}
