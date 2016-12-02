@@ -335,7 +335,7 @@ def update_module_content(request, course_code, module_seq):
         if module.count() == 0:
             return JsonResponse(ERR_MOD_DOES_NOT_EXIST)
         module = module[0]
-        module.moduleTitle = post_data['module']
+        module.moduleTitle = post_data['moduleTitle']
         module.save()
         return JsonResponse(model_to_dict(module))
     else:
@@ -458,22 +458,18 @@ def __create_new_component(post_data, module):
         cmp = None
         if content_type == TEXT:
             cmp = module.textcomponent_set.create(order=post_data['order'],
-                                                  contentType=post_data['contentType'],
                                                   content=post_data['content'],
                                                   contentTitle=post_data['contentTitle'])
         elif content_type == IMG:
             cmp = module.imagecomponent_set.create(order=post_data['order'],
-                                                   contentType=post_data['contentType'],
                                                    content=post_data['content'],
                                                    contentTitle=post_data['contentTitle'])
         elif content_type == FILE:
             cmp = module.filecomponent_set.create(order=post_data['order'],
-                                                  contentType=post_data['contentType'],
                                                   content=post_data['content'],
                                                   contentTitle=post_data['contentTitle'])
         elif content_type == VIDEO:
             cmp = module.videocomponent_set.create(order=post_data['order'],
-                                                   contentType=post_data['contentType'],
                                                    content=post_data['content'],
                                                    contentTitle=post_data['contentTitle'])
 
@@ -535,6 +531,7 @@ def addComponent(request, course_code, module_seq):
                     return JsonResponse(ERR_COMP_ORDER_EXISTS)
 
                 component = __create_new_component(post_data, module)  # create the appropriate component
+                
                 if component:
                     return_data = model_to_dict(component)
                 else:

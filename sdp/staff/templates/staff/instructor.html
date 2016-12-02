@@ -38,6 +38,13 @@
         <input type="button" value='Add Module' onclick="addModule()">
     </form>
 
+    <h3>Add Module</h3>
+    <form id="updateModule">
+        Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
+        Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
+        <input type="button" value='Update Module' onclick="updateModule()">
+    </form>
+
     <hr>
 
     <h3>Add Component</h3>
@@ -48,8 +55,75 @@
         Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
         Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
         <input type="button" value='Add Component' onclick="addComponent()">
+        <input id='uploadedfile' type="file" placeholder="Upload file">
+        <button onclick="uploadFunc()"> Upload </button>
+        <button onclick="deleteFunc()"> Delete </button>
+        <a id="link" href="#"> The uploaded file </a>
     </form>
 </div>
+
+ <script>
+ function addComponent() {
+        var form = document.getElementById('addComponentForm');
+        console.log({
+                order: form.order.value,
+                contentType: form.contentType.value,
+                content: form.content.value,
+                contentTitle: form.contentTitle.value
+            });
+        
+        $.ajax({
+            url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + form.moduleSeq.value + "/addComponent",
+            type: 'POST',
+            data: JSON.stringify({
+                order: form.order.value,
+                contentType: form.contentType.value,
+                content: form.content.value,
+                contentTitle: form.contentTitle.value
+            }),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadModules();
+                }                
+            }
+        });
+    }
+        /*function uploadFunc(){
+
+            console.log("Calling upload")
+            var xhr = new XMLHttpRequest();
+            var ele = document.getElementById('uploadedfile');
+            var form_data = new FormData();
+            form_data.append('upload', ele.files[0]);
+            form_data.append('extra_info', 'whaddup');
+            console.log(form_data.get('upload'));
+            xhr.open("POST", "uploadfiletest", true);
+            xhr.onreadystatechange = function(){
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    console.log(data['file_path']);
+                    anchor = document.getElementById("link");
+                    anchor.setAttribute("href", data['file_path']);
+                    anchor.textContent = data['filename'];
+                }
+            }
+            xhr.send(form_data);
+        }
+
+        function deleteFunc() {
+            var xhr = new XMLHttpRequest();
+            var data = {"name": "Assignment3_questions.pdf"};
+            xhr.open("POST", "deletefiletest");
+            xhr.send(data);
+        }*/
+    </script>
 
 
 <script type="text/javascript">
@@ -255,8 +329,35 @@
         });
     }
 
-    function addComponent() {
+    function updateModule() {
+        var form = document.getElementById('updateModule');
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + form.moduleNumber.value + '/update_content',
+            type: 'POST',
+            data: JSON.stringify({moduleTitle: form.moduleTitle.value}),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadModules();
+                }
+            }
+        });
+    }
+
+    /*function addComponent() {
         var form = document.getElementById('addComponentForm');
+        console.log({
+                order: form.order.value,
+                contentType: form.contentType.value,
+                content: form.content.value,
+                contentTitle: form.contentTitle.value
+            });
+        
         $.ajax({
             url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + form.moduleSeq.value + "/addComponent",
             type: 'POST',
@@ -278,7 +379,7 @@
                 }                
             }
         });
-    }
+    }*/
 </script>
 
 {% endblock %}
