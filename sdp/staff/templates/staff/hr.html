@@ -1,6 +1,43 @@
 {% extends "staff/header.html" %}
 {% block content %}
+<div class="container-fluid">
 
+	<div class="row">
+		<h3>Search courses completed by:</h3>
+		<form id='searchByParticipantForm' class="form-inline">
+			<div class="col-md-12">
+				<div class="form-group">
+					<label for="theUsername">Participant:</label>
+					<input type="text" class="form-control" id="theUsername" placeholder="Enter the Username" name="username" value="">
+
+					<input class="btn btn-primary btn-block" type='button' onclick='searchCourses()' value='Search'>
+				</div>
+			
+			</div>
+		</form>
+	</div>	
+	<hr>
+	<div id='courseListByParticipant'><h4 align="center">List of Courses:</h4></div>
+	<hr>
+	<div class="row">
+		<h3>Search participants who have completed:</h3>
+		<form id='searchByCourseForm' class="form-inline">
+			<div class="col-md-12">
+				<div class="form-group">
+					<label for="theCourseId">Course:</label>
+					<select class="form-control" id="theCourses"  value="" name="courses">
+						<option>Select a Course</option>
+					</select>
+					<input class="btn btn-primary btn-block" type='button' onclick='searchParticipants()' value='Search'>
+				</div>
+			
+			</div>
+		</form>
+	</div>	
+	<hr>
+	<div id='participantListByCourse'><h4 align="center">List of Usernames:</h4></div>
+	<hr>
+</div><!--
 <h3>Search courses completed by:</h3>
 <form id='searchByParticipantForm'>
 	Participant: <input type='text' name='username' value='username'>
@@ -18,27 +55,96 @@
 </form>
 <hr>
 <div id='participantListByCourse'></div>
-
+-->
 <script type='text/javascript'>
 
+	$(document).ready(function() {
+		loadCourses();
+	});
+
 	//get all courses for the select tab
-	$.ajax({
-        url: 'http://localhost:8000/courses/',
-        type: 'GET',
-        dataType: 'json',
-        success(result,status,xhr) {              
-            $.each(result.all_courses, function(index, value) {
-                if (value.isPublished) {
-                    $('#searchByCourseForm select').append("<option value='" + value.courseCode + "'>" + value.courseCode + " : " + value.title + "</option>");                              
-                }
-            });
-        }
-    });
+	function loadCourses(){
+		$.ajax({
+	        url: 'http://localhost:8000/courses/',
+	        type: 'GET',
+	        dataType: 'json',
+	        success(result,status,xhr) {              
+	            $.each(result.all_courses, function(index, value) {
+	                if (value.isPublished) {
+	                	//console.log(value.courseCode);
+	                	//console.log(value.title);
+	                    $('#searchByCourseForm select').append("<option value='" + value.courseCode + "'>" + value.courseCode + " : " + value.title + "</option>");                              
+	                }
+	            });
+	        }
+	    });
+	}
+
+	//search all courses completed by a participant (via username)
+	function searchCourses() {
+		$("#courseListByParticipant").empty();
+		$("#courseListByParticipant").append("<h4 align='center'>List of Courses:</h4>");
+
+		var arrayOfCourses = [];
+		var arrayOfCourseIDs = [];
+		$.ajax({
+	        url: 'http://localhost:8000/courses/',
+	        type: 'GET',
+	        async: false,
+	        dataType: 'json',
+	        success(result,status,xhr) {
+	        	//console.log("The number is" + result.all_courses.length);              
+	            $.each(result.all_courses, function(index, value) {
+	                if (value.isPublished) {
+	                	arrayOfCourses[index] = value.courseCode + ": " + value.title;
+	                	arrayOfCourseIDs[index] = value.courseCode;      	                                 
+	                }
+	            });
+	        }
+	    });
+	    //console.log(arrayOfCourses[0]);
+	    //console.log(arrayOfCourseIDs);
+	    var numRecords = arrayOfCourseIDs.length;
+		var form = document.getElementById('searchByParticipantForm');
+		if (form.username.value === "")
+			alert('Please type in a username');
+		else{
+			//console.log(form.username.value);
+			var i;
+			for (i = 0; i<numRecords;i++){
+				$.ajax({
+					url: 'http://localhost:8000/courses/' + arrayOfCourseIDs[i] + '/completed',
+					async: false,
+					type: 'GET',
+					dataType: 'json',
+					success(result,status,xhr) {
+						var num = result.completed_enrolls.length;
+						//console.log(result.completed_enrolls.length);
+						var j;
+						for (j = 0; j<num;j++) {
+							//console.log(result.completed_enrolls[j].participant_info.username);
+							//console.log("This is the form value: " + form.username.value);
+
+							if(result.completed_enrolls[j].participant_info.username === form.username.value) {
+									$("#courseListByParticipant").append("<p>"+arrayOfCourses[i]+"<p>");
+							}
+						}
+						
+					}
+				});
+
+			}
+	
+		}
+
+	}
 
 	//search participants who have completed a course
 	function searchParticipants() {
+		$("#participantListByCourse").empty();
+		$("#participantListByCourse").append("<h4 align='center'>List of Usernames:</h4>");
 		var form = document.getElementById('searchByCourseForm');
-		if (form.courses.value == '')
+		if (form.courses.value === "Select a Course")
 			alert('Please choose a course');
 		else
 			$.ajax({
@@ -46,9 +152,12 @@
 				type: 'GET',
 				dataType: 'json',
 				success(result,status,xhr) {
-					$.each(result.completed_enrolls, function() {
-
-					})
+					var numRecords = result.completed_enrolls.length;
+					var i;
+					for (i = 0; i<numRecords;i++) {
+						$("#participantListByCourse").append("<p>"+result.completed_enrolls[i].participant_info.username+"<p>");
+					}
+					
 				}
 			});
 	}	
