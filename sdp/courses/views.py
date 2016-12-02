@@ -38,6 +38,8 @@ def add_category(request):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 
 # return all the categories in the database
@@ -76,7 +78,8 @@ def remove_category(request):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
-
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 # --------------------------------------------------- COURSES --------------------------------------------------------
 
@@ -629,6 +632,8 @@ def remove_component(request, course_code, module_seq, component_id):
             component.delete()
 
         return JsonResponse({'success': True, 'message': 'Component removed'})
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 
 # ------------------------------------------ENROLL AND ENROLLMENT RECORDS -------------------------------------------
