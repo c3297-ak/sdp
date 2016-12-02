@@ -25,9 +25,9 @@
     </form>
 </div>
 
-<div id="viewModCom">
-    <h3><a href='#'>View Courses</a> / Modules and Components</h3>
-    <ul id='sortable'></ul>
+<div id="viewModules">
+    <h3><a class='backToCourse' href='#'>Courses</a> / Modules</h3>
+    <ul class='sortable'></ul>
 
     <hr>
 
@@ -38,7 +38,9 @@
         <input type="button" value='Add Module' onclick="addModule()">
     </form>
 
-    <h3>Add Module</h3>
+    <hr>
+
+    <h3>Update Module</h3>
     <form id="updateModule">
         Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
         Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
@@ -47,84 +49,34 @@
 
     <hr>
 
+    <h3>Remove Module</h3>
+    <form id="removeModule">
+        Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
+        <input type="button" value='Remove Module' onclick="removeModule()">
+    </form>
+
+</div>
+
+<div id="viewComponents">
+    <h3><a class='backToCourse' href='#'>Courses</a> / <a class='backToModule' href='#'>Modules</a> / Components</h3>
+    <ul class='sortable'></ul>
+    <hr>
+    <h3>Content</h3>
+    <div id='componentContent'></div>
+    <hr>
     <h3>Add Component</h3>
     <form id="addComponentForm">
-        Module Number: <input type="text" name="moduleSeq" placeholder="Module Number"> <br>
         Order: <input type="text" name="order" placeholder="Component Order"> <br>
         Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
         Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
         Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
         <input type="button" value='Add Component' onclick="addComponent()">
-        <input id='uploadedfile' type="file" placeholder="Upload file">
+        <!--<input id='uploadedfile' type="file" placeholder="Upload file">
         <button onclick="uploadFunc()"> Upload </button>
         <button onclick="deleteFunc()"> Delete </button>
-        <a id="link" href="#"> The uploaded file </a>
+        <a id="link" href="#"> The uploaded file </a>-->
     </form>
 </div>
-
- <script>
- function addComponent() {
-        var form = document.getElementById('addComponentForm');
-        console.log({
-                order: form.order.value,
-                contentType: form.contentType.value,
-                content: form.content.value,
-                contentTitle: form.contentTitle.value
-            });
-        
-        $.ajax({
-            url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + form.moduleSeq.value + "/addComponent",
-            type: 'POST',
-            data: JSON.stringify({
-                order: form.order.value,
-                contentType: form.contentType.value,
-                content: form.content.value,
-                contentTitle: form.contentTitle.value
-            }),
-            dataType: 'json',
-            beforeSend(xhr) {
-                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-            },
-            success(result,status,xhr) {
-                if (result.hasOwnProperty('failure'))
-                    alert(result.message);
-                else {
-                    loadModules();
-                }                
-            }
-        });
-    }
-        /*function uploadFunc(){
-
-            console.log("Calling upload")
-            var xhr = new XMLHttpRequest();
-            var ele = document.getElementById('uploadedfile');
-            var form_data = new FormData();
-            form_data.append('upload', ele.files[0]);
-            form_data.append('extra_info', 'whaddup');
-            console.log(form_data.get('upload'));
-            xhr.open("POST", "uploadfiletest", true);
-            xhr.onreadystatechange = function(){
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    data = JSON.parse(xhr.responseText);
-                    console.log(data);
-                    console.log(data['file_path']);
-                    anchor = document.getElementById("link");
-                    anchor.setAttribute("href", data['file_path']);
-                    anchor.textContent = data['filename'];
-                }
-            }
-            xhr.send(form_data);
-        }
-
-        function deleteFunc() {
-            var xhr = new XMLHttpRequest();
-            var data = {"name": "Assignment3_questions.pdf"};
-            xhr.open("POST", "deletefiletest");
-            xhr.send(data);
-        }*/
-    </script>
-
 
 <script type="text/javascript">
 
@@ -133,7 +85,8 @@
     //*********************************
 
     var thisCourse;
-    $('#viewModCom').hide();
+    var thisModule;
+    $('#viewModules').hide();
     $('#viewComponents').hide();
     $('#viewCourses').show();
     loadCourses();
@@ -155,17 +108,33 @@
     // PAGE CONTROL LOGIC
     //*********************************
 
-    $('#viewModCom').on('click','h3 a', function() {
-        $('#viewModCom').hide();
+    $('a.backToCourse').click(function() {
+        $('#viewModules').hide();
+        $('#viewComponents').hide();
         $('#viewCourses').show();
     });
 
-    $("#viewCourses").on('click','a',function(){
+    $('a.backToModule').click(function() {
+        $('#viewComponents').hide();
         $('#viewCourses').hide();
-        $('#viewModCom').show();
+        $('#viewModules').show();
+    });
+
+    $("#viewCourses").on('click','a',function(){
+        $('#viewComponents').hide();
+        $('#viewCourses').hide();      
         thisCourse = $(this).attr('rel');
         loadModules();
+        $('#viewModules').show();
     });
+
+    $('#viewModules').on('click','li a',function() {
+        $('#viewModules').hide();
+        $('#viewCourses').hide();
+        thisModule = $(this).attr('rel');
+        loadComponents();
+        $('#viewComponents').show();
+    })
 
 
     //*********************************
@@ -183,8 +152,10 @@
                 console.log(JSON.stringify(result))        
                 $.each(result.course_list, function(index, value) {
                     $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br>Category: " + value.category + "<br>Description: " + value.description + '</p>');
-                    if(!value.isPublished)
-                        $("#courseList").append("<button rel='" + value.courseCode + "' type='button'>Publish</button>");             
+                    if(!value.isPublished) {
+                        $("#courseList").append("<button class='publish' rel='" + value.courseCode + "' type='button'>Publish</button>");
+                        $("#courseList").append("<button class='remove' rel='" + value.courseCode + "' type='button'>Remove</button>");
+                    }
                 });
             }
         });
@@ -245,7 +216,7 @@
     }
 
     //publish a course
-    $('#courseList').on('click', 'button', function() {
+    $('#courseList').on('click', 'button.publish', function() {
         cf = confirm("Please confirm that you want to publish this course");
         if (cf) {
             $.ajax({
@@ -256,14 +227,40 @@
                     xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
                 },
                 success(result,status,xhr) {
-                    loadCourses();
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
+                        loadCourses();
+                    }
+                }
+            });
+        }
+    });
+
+    //remove a course
+    $('#courseList').on('click', 'button.remove', function() {
+        cf = confirm("Please confirm that you want to remove this course");
+        if (cf) {
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/remove',
+                type: 'POST',
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
+                        loadCourses();
+                    }
                 }
             });
         }
     });
 
     //*********************************
-    // VIEW COMPONENTS AND MODULES
+    // MODULES
     //*********************************
 
     //display modules and components
@@ -273,36 +270,13 @@
             type: 'GET',
             dataType: 'json',
             success(result,status,xhr) {
-                $("#sortable").empty();
+                $("#viewModules .sortable").empty();
                 $.each(result.modules, function(index, value) {
-                    $('#sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.id + "'><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a></li>");
-                    $('#sortable').append("<div id='" + value.id + "'></div>");
+                    $('#viewModules .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
                 });
             }
         });
     }
-
-    //view components of this module
-    /*$('#sortable').on('click','a',function() {
-        var thisModuleId = $(this).attr('rel');
-        if($('#' + thisModuleId).is(':empty') ) {
-            $.ajax({
-                url: 'http://localhost:8000/courses/' + thisCourse,
-                type: 'GET',
-                dataType: 'json',
-                success(result,status,xhr) {
-                    $.each(result.modules, function(index, value) {
-                        if (value.id == thisModuleId)
-                        $.each(value.components, function(index, data) {
-                            $('#' + thisModuleId).append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
-                        });
-                    });
-                }
-            });
-        } else {
-            $('#' + thisModuleId).empty();
-        }
-    });*/
 
 
     //add modules
@@ -329,6 +303,7 @@
         });
     }
 
+    //update modules
     function updateModule() {
         var form = document.getElementById('updateModule');
         $.ajax({
@@ -349,17 +324,93 @@
         });
     }
 
-    /*function addComponent() {
-        var form = document.getElementById('addComponentForm');
-        console.log({
-                order: form.order.value,
-                contentType: form.contentType.value,
-                content: form.content.value,
-                contentTitle: form.contentTitle.value
-            });
-        
+    //remove module
+    function removeModule() {
+        var form = document.getElementById('removeModule');
         $.ajax({
-            url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + form.moduleSeq.value + "/addComponent",
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + form.moduleNumber.value + '/remove_module',
+            type: 'POST',
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadModules();
+                }
+            }
+        });
+    }
+
+    //*********************************
+    // COMPONENTS
+    //*********************************
+
+    function loadComponents() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $('#viewComponents .sortable').empty();
+                $('#componentContent').empty();
+                $.each(result.modules, function(index, value) {
+                    if (value.sequenceNumber == thisModule)
+                    $.each(value.components, function(index, data) {
+                        $('#viewComponents .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
+                    });
+                });
+            }
+        });
+    }
+
+    //display component content
+    $('#viewComponents').on('click','li a', function() {
+        var thisComponent = $(this).attr('rel');
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $('#componentContent').empty();
+                $.each(result.modules, function(index, value) {
+                    if (value.sequenceNumber == thisModule)
+                    $.each(value.components, function(index, data) {
+                        if (data.id == thisComponent)
+                            $('#componentContent').append("<p>" + data.content + "</p><button rel='" + data.id + "' type='button'>Remove This Component</button>");
+                    });
+                });
+            }
+        });
+    });
+
+    //remove a component
+    $('#componentContent').on('click','button', function() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + $(this).attr('rel') + '/remove',
+            type: 'POST',
+            data: JSON.stringify({contentType : 'text'}),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadComponents();
+                }
+            }
+
+        });
+    });
+
+    function addComponent() { 
+        form = document.getElementById('addComponentForm');
+        $.ajax({
+            url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + thisModule + "/addComponent",
             type: 'POST',
             data: JSON.stringify({
                 order: form.order.value,
@@ -375,11 +426,11 @@
                 if (result.hasOwnProperty('failure'))
                     alert(result.message);
                 else {
-                    loadModules();
+                    loadComponents();
                 }                
             }
         });
-    }*/
+    }
 </script>
 
 {% endblock %}
