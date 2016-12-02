@@ -1,30 +1,158 @@
 {% extends "staff/header.html" %}
 {% block content %}
+<div class="container-fluid">
+    <div id="viewCourses">
+        <h3 style='text-align:center'>My Courses</h3>
+        <div id="courseList"></div>
+        <hr>
+        <h3 style='text-align:center'>Add a Course</h3>
+        <form id="addCourseForm">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theCoursecode">Course Code</label>
+                    <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
+                </div>
+                <div class="form-group">
+                <label for="theCategory">Category</label>
+                    <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="theTitle">Title</label>
+                    <input class="form-control" name='title' placeholder="Enter Course Title" id="theTitle">
+                </div>
+                <div class="form-group">
+                    <label for="theDesc">Description</label>
+                    <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
+                </div>
+                <input type="button" value='Add Course' class="btn btn-default" onclick="addCourse()">
+            </div>
+        </form>
+        <hr>
+        <h3 style='text-align:center'>Update Course Information</h3>
+        <form id="updateCourseForm">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theOldCourseCode">Old Course Code</label>
+                    <input class="form-control" type="text" name="oldCourseCode" placeholder="Enter the old Course Code" id="theOldCourseCode">
+                </div>
+                <div class="form-group">
+                    <label for="theCoursecode">Course Code</label>
+                    <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
+                </div>
+                <div class="form-group">
+                    <label for="theCategory">Category</label>
+                    <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
+                </div>
+                <div class="form-group">
+                    <label for="theDesc">Description</label>
+                    <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
+                </div>
+                <input type="button" value='Update Course' class="btn btn-default" onclick="updateCourse()">
+            </div>
 
-<div id="viewCourses">
-    <h3>View Courses</h3>
-    <div id="courseList"></div>
-    <hr>
-    <h3>Add a Course</h3>
-    <form id="addCourseForm">
-        Course Code <input type="text" name="courseCode" placeholder="Course Code"> <br>
-        Category <select name='category'><option value='' selected>All Categories</option></select><br>
-        Title <input type="text" name="title" placeholder="Course Title"> <br>
-        Description <textarea rows='4' cols='50' type="text" name="description">Course Description</textarea><br>
-        <input type="button" value='Add Course' onclick="addCourse()">
-    </form>
-    <hr>
-    <h3>Update Course Information</h3>
-    <form id="updateCourseForm">
-        Old Course Code <input type="text" name="oldCourseCode" placeholder="Old Course Code"> <br>
-        Course Code <input type="text" name="courseCode" placeholder="Course Code"> <br>
-        Category <select name='category'><option value='' selected>All Categories</option></select><br>
-        Title <input type="text" name="title" placeholder="Course Title"> <br>
-        Description <textarea rows='4' cols='50' type="text" name="description">Course Description</textarea><br>
-        <input type="button" value='Update Course' onclick="updateCourse()">
-    </form>
+        </form>
+    </div>
+
+    <div id="viewModules">
+        <h3 style="text-align: center"><a class='backToCourse' href='#'>Courses</a> | Modules</h3>
+        <ul class='sortable'></ul>
+
+        <hr>
+
+        <h3 style="text-align: center">Add Module</h3>
+        <form id="addModuleForm">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theModuleTitle">Module Title:</label>
+                    <input type="text" class="form-control" name="moduleTitle" placeholder="Enter Module Title" id="theModuleTitle">
+                </div>
+                <div class="form-group">
+                    <label for="theSeqNum">Sequence Number:</label>
+                    <input type="text" class="form-control" name="sequenceNumber" placeholder="Enter Module Sequence Number">
+                </div>
+                    <input type="button" class="btn btn-default" value='Add Module' onclick="addModule()">
+            </div>
+        </form>
+
+        <hr>
+
+        <h3 style="text-align: center">Update Module</h3>
+        <form id="updateModule">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theModuleNum">Module Number:</label>
+                    <input type="text" class="form-control" name="moduleNumber" placeholder="Enter Module Number" id="theModuleNum">
+                </div>
+                <div class="form-group">
+                    <label for="theModuleTitle">Module Title:</label>
+                    <input type="text" class="form-control" name="moduleTitle" placeholder="Enter Module Title" id="theModuleTitle">
+                </div>
+                    <input type="button" class="btn btn-default" value='Update Module' onclick="updateModule()">
+            </div>
+            <!--Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
+            Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
+            <input type="button" value='Update Module' onclick="updateModule()">-->
+        </form>
+
+        <hr>
+
+        <h3 style="text-align: center">Remove Module</h3>
+        <form id="removeModule">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theModuleNum">Module Number:</label>
+                    <input type="text" class="form-control" name="moduleNumber" placeholder="Enter Module Number" id="theModuleNum">
+                </div>
+                    <input type="button" class="btn btn-danger" value='Remove Module' onclick="removeModule()">
+            </div>
+            <!--Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
+            <input type="button" value='Remove Module' onclick="removeModule()">-->
+        </form>
+
+    </div>
+    <div id="viewComponents">
+        <h3 style="text-align:center"><a class='backToCourse' href='#'>Courses</a> | <a class='backToModule' href='#'>Modules</a> | Components</h3>
+        <ul class='sortable'></ul>
+        <hr>
+        <h3 style="text-align:center">Content</h3>
+        <div id='componentContent'></div>
+        <hr>
+        <h3 style="text-align:center">Add Component</h3>
+        <form id="addComponentForm">
+            <div class="container-fluid">
+                <div class="form-group">
+                    <label for="theOrder">Order:</label>
+                    <input type="text" class="form-control" name="order" placeholder="Enter Component Order" id="theOrder">
+                </div>
+                <div class="form-group">
+                    <label for="theContentType">Content Type:</label>
+                    <input type="text" class="form-control" name="contentType" placeholder="Enter Content Type" id="theContentType">
+                </div>
+                <div class="form-group">
+                    <label for="theContentTitle">Content Title:</label>
+                    <input type="text" class="form-control" name="contentTitle" placeholder="Enter Content Title" id="theContentTitle">
+                </div>
+                <div class="form-group">
+                    <label for="theContent">Content:</label>
+                    <textarea class="form-control" rows='4' type="text" name="content" id="theContent"></textarea>
+                </div>
+                    <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
+            </div>
+            <!--Order: <input type="text" name="order" placeholder="Component Order"> <br>
+            Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
+            Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
+            Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
+            <input type="button" value='Add Component' onclick="addComponent()">-->
+            <!--<input id='uploadedfile' type="file" placeholder="Upload file">
+            <button onclick="uploadFunc()"> Upload </button>
+            <button onclick="deleteFunc()"> Delete </button>
+            <a id="link" href="#"> The uploaded file </a>-->
+        </form>
+    </div>
+
 </div>
 
+<!--
 <div id="viewModules">
     <h3><a class='backToCourse' href='#'>Courses</a> / Modules</h3>
     <ul class='sortable'></ul>
@@ -55,10 +183,10 @@
         <input type="button" value='Remove Module' onclick="removeModule()">
     </form>
 
-</div>
-
+</div>-->
+<!--
 <div id="viewComponents">
-    <h3><a class='backToCourse' href='#'>Courses</a> / <a class='backToModule' href='#'>Modules</a> / Components</h3>
+    <h3><a class='backToCourse' href='#'>Courses</a> / <a class='backToModule' href='#'>Modules</a> | Components</h3>
     <ul class='sortable'></ul>
     <hr>
     <h3>Content</h3>
@@ -71,12 +199,12 @@
         Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
         Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
         <input type="button" value='Add Component' onclick="addComponent()">
-        <!--<input id='uploadedfile' type="file" placeholder="Upload file">
+        comment here <input id='uploadedfile' type="file" placeholder="Upload file">
         <button onclick="uploadFunc()"> Upload </button>
         <button onclick="deleteFunc()"> Delete </button>
-        <a id="link" href="#"> The uploaded file </a>-->
+        <a id="link" href="#"> The uploaded file </a> end here
     </form>
-</div>
+</div>-->
 
 <script type="text/javascript">
 
@@ -153,8 +281,8 @@
                 $.each(result.course_list, function(index, value) {
                     $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br>Category: " + value.category + "<br>Description: " + value.description + '</p>');
                     if(!value.isPublished) {
-                        $("#courseList").append("<button class='publish' rel='" + value.courseCode + "' type='button'>Publish</button>");
-                        $("#courseList").append("<button class='remove' rel='" + value.courseCode + "' type='button'>Remove</button>");
+                        $("#courseList").append("<button class='publish btn btn-primary' rel='" + value.courseCode + "' type='button'>Publish</button>");
+                        $("#courseList").append("<button class='remove btn btn-danger' rel='" + value.courseCode + "' type='button' style='margin-left:5px'>Remove</button>");
                     }
                 });
             }
@@ -164,6 +292,11 @@
     //add a course
     function addCourse() {
         var form = document.getElementById('addCourseForm');
+        console.log(form.courseCode.value);
+        console.log(form.category.value);
+        console.log(form.title.value);
+        console.log(form.description.value);
+
         $.ajax({
             url: 'http://localhost:8000/courses/addCourse',
             type: 'POST',
@@ -184,6 +317,10 @@
                     alert(result.message);
                 else {
                     loadCourses();
+                    form.courseCode.value = "";
+                    form.category.value = "";
+                    form.title.value = "";
+                    form.description.value = "";
                 }
             }
         });
@@ -210,6 +347,11 @@
                     alert(result.message);
                 else {
                     loadCourses();
+                    form.oldCourseCode.value = "";
+                    form.courseCode.value = "";
+                    form.category.value = "";
+                    form.title.value = "";
+                    form.description.value = "";
                 }
             }
         });
@@ -379,7 +521,7 @@
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
                         if (data.id == thisComponent)
-                            $('#componentContent').append("<p>" + data.content + "</p><button rel='" + data.id + "' type='button'>Remove This Component</button>");
+                            $('#componentContent').append("<p>" + data.content + "</p><button rel='" + data.id + "' type='button' class='btn btn-danger'>Remove This Component</button>");
                     });
                 });
             }

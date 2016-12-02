@@ -2,8 +2,8 @@
 {% block content %}
 <div class="container-fluid">
     <div id="roleOptions" class="row">
-        <div class="col-md-4"><button id="viewCoursesBtn" class="btn btn-primary btn-block btn-lg">View Available Courses</button></div>
-        <div class="col-md-4"><button id="viewEnrollmentBtn" class="btn btn-block btn-lg" style="background:#111111;color:white">Current Enrollment</button></div>
+        <div class="col-md-6 "><button id="viewCoursesBtn" class="btn btn-primary btn-block btn-lg active" aria-pressed="true">View Available Courses</button></div>
+        <div class="col-md-6 "><button id="viewEnrollmentBtn" class="btn btn-default btn-block btn-lg active" aria-pressed="true">Current Enrollment</button></div>
         <!--<div class="col-md-4"><button id="enrollmentHistBtn" class="btn btn-block btn-lg" style="border-color:#999999; border-width: 2px;">Enrollment History</button></div>-->
     </div>
     <hr>
@@ -28,7 +28,7 @@
         <div id="courseDetails"></div>
     </div>
     <div id="viewEnrollment" class="row">
-        <h3>My Enrollments</h3>
+        <h3 style="text-align: center;">My Enrollments</h3>
         <div id="enrollmentList"></div>
         <div id="enrollmentDetails"></div>
     </div>
@@ -148,7 +148,7 @@
 
     //load all course enrollments
     function loadEnrollment() {
-
+    	var theCourseCode;
         $.ajax({
             url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/enrolled',
             type: 'GET',
@@ -403,30 +403,6 @@
         }
         
     });
-/*
-    //retake a course
-    $('#retakeBtn').on('click', 'button', function () {
-        var cf = confirm('Please confirm that you would like to retake this course.');
-        if (cf) {
-            $.ajax({
-                url: "http://localhost:8000/courses/retake_course",
-                type: 'POST',
-                data: JSON.stringify({
-                	course_id : thisCourse, 
-                	staff_id : getCookie('staffId')}),
-                dataType: 'json',
-                beforeSend(xhr){
-                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-                },
-                success(result,status,xhr) {
-                    if (result.hasOwnProperty('failure'))
-                        alert(result.message);
-                    else
-                        window.location.reload();
-                }
-            });
-        }
-    });*/
 </script>
 
 {% endblock %}

@@ -1,7 +1,7 @@
 body, html{
 	height: 100%;
 	background-repeat: no-repeat;
-	background-color: #d0d0d0;
+	background-color: #9F9E9D;
 }
 
 .main{
@@ -233,4 +233,13 @@ input, input::-webkit-input-placeholder {
 
 #mainDisplay {
 	height: auto;
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+}
+
+.col-centered{
+    float: none;
+    margin: 0 auto;
 }
