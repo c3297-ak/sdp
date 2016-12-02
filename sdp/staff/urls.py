@@ -6,6 +6,7 @@ app_name = 'staff'
 urlpatterns = [
 
     url(r'^(?P<staff_username>.+)/staffInfo$', views.staffInfo, name='staffInfo'),
+    url(r'^(?P<staff_username>.+)/courseCompleted$', views.courseCompleted, name='courseCompleted'),
     url(r'^(?P<staff_id>[0-9]+)/getStaffUsername$', views.getStaffUsername, name='getStaffUsername'),
     url(r'^staffs$', views.staffs, name='staffs'),
 

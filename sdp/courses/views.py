@@ -39,6 +39,8 @@ def add_category(request):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 
 # return all the categories in the database
@@ -77,7 +79,8 @@ def remove_category(request):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
-
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 # --------------------------------------------------- COURSES --------------------------------------------------------
 
@@ -176,7 +179,7 @@ def update_course_contents(request, course_code):
                 return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
 
             course.courseCode = new_course_code
-            course.category = new_category
+            course.category = category[0]
             course.title = new_title
             course.description = new_description
             course.save()
@@ -184,7 +187,11 @@ def update_course_contents(request, course_code):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
-
+        
+        # return json response
+        return JsonResponse(return_data, safe=False)
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 # function to return the course description
 def courseDescription(request, course_code):
@@ -457,22 +464,18 @@ def __create_new_component(post_data, module):
         cmp = None
         if content_type == TEXT:
             cmp = module.textcomponent_set.create(order=post_data['order'],
-                                                  contentType=post_data['contentType'],
                                                   content=post_data['content'],
                                                   contentTitle=post_data['contentTitle'])
         elif content_type == IMG:
             cmp = module.imagecomponent_set.create(order=post_data['order'],
-                                                   contentType=post_data['contentType'],
                                                    content=post_data['content'],
                                                    contentTitle=post_data['contentTitle'])
         elif content_type == FILE:
             cmp = module.filecomponent_set.create(order=post_data['order'],
-                                                  contentType=post_data['contentType'],
                                                   content=post_data['content'],
                                                   contentTitle=post_data['contentTitle'])
         elif content_type == VIDEO:
             cmp = module.videocomponent_set.create(order=post_data['order'],
-                                                   contentType=post_data['contentType'],
                                                    content=post_data['content'],
                                                    contentTitle=post_data['contentTitle'])
 
@@ -534,6 +537,7 @@ def addComponent(request, course_code, module_seq):
                     return JsonResponse(ERR_COMP_ORDER_EXISTS)
 
                 component = __create_new_component(post_data, module)  # create the appropriate component
+                
                 if component:
                     return_data = model_to_dict(component)
                 else:
@@ -631,6 +635,8 @@ def remove_component(request, course_code, module_seq, component_id):
             component.delete()
 
         return JsonResponse({'success': True, 'message': 'Component removed'})
+    else:
+        return JsonResponse(ERR_POST_EXPECTED)
 
 
 # ------------------------------------------ENROLL AND ENROLLMENT RECORDS -------------------------------------------
@@ -760,7 +766,7 @@ def update_course_progress(request):
                 enrollment.save()
 
             return JsonResponse(model_to_dict(enrollment))
-        else:
+        else: 
             return JsonResponse(ERR_POST_EXPECTED)
     except Exception as e:
         print(e)

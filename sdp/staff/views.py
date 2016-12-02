@@ -6,6 +6,28 @@ from courses.models import Enrollment, Course
 from sdp.utilities import *
 import json
 
+def courseCompleted (request, staff_username):
+    try:
+        if request.method == 'GET':
+            staff = Staff.objects.filter(username=staff_username)
+            if staff.count() == 0:
+                return_data = ERR_STAFF_DOES_NOT_EXIST
+            staff = staff[0]
+
+            completed_enrolls = []
+            enrollments = Enrollment.objects.filter(isCompleted=True, participant=staff)
+            for enrollment in enrollments:
+                course = model_to_dict(enrollment.course)
+                completed_enrolls.append(course)
+            return_data = {'completed_enrolls': completed_enrolls}
+            
+        else:
+            return_data = ERR_GET_EXPECTED
+    except Exception as e:
+        print(e)
+        return_data = ERR_INTERNAL_ERROR
+    return JsonResponse(return_data)
+
 def staffs(request):
     try:
         if request.method == 'GET':
@@ -251,7 +273,7 @@ def enrolled_courses(request, staff_id):
                 courses = []
                 for enrollment in Enrollment.objects.filter(participant=staff):
                     data = {'courseCode': enrollment.course.courseCode, 'title': enrollment.course.title,
-                            'progress': enrollment.modules_completed}
+                            'progress': enrollment.modules_completed, 'isCompleted': enrollment.isCompleted}
                     courses.append(data)
                 return_data['course_list'] = courses
             else:
@@ -278,7 +300,7 @@ def courselist_instructor(request, staff_id):
                 return_data = dict()
                 courses = []
                 for course in Course.objects.filter(instructor=staff):
-                    data = {'courseCode': course.courseCode, 'title': course.title, 'isPublished': course.isPublished, 'category': course.category.name}
+                    data = {'courseCode': course.courseCode, 'title': course.title, 'isPublished': course.isPublished, 'category': course.category.name, 'description':course.description}
                     courses.append(data)
                 return_data['course_list'] = courses
             else:
