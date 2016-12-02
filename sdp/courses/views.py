@@ -811,12 +811,12 @@ def drop_course(request):
 
 # function to retake a course
 def retake_course(request):
-    # POST body must contain course_id, staff_id, new_status (the number of modules completed from start)
+    # POST body must contain course_id, staff_id
     try:
         if request.method == 'POST':
             post_data = json.loads(request.body.decode('utf-8'))
 
-            if not all_fields_present(post_data, ['course_id', 'staff_id', 'new_status']):
+            if not all_fields_present(post_data, ['course_id', 'staff_id']):
                 return JsonResponse(ERR_REQUIRED_FIELD_ABS)
 
             course = Course.objects.filter(pk=post_data['course_id'])
@@ -835,7 +835,6 @@ def retake_course(request):
             if not enrollment.isCompleted:
                 return JsonResponse(ERR_CANNOT_RETAKE)
 
-            # figure this part out  <--------------------------------------------------------------
             enrollment.modules_completed = 0
             enrollment.save()
             return JsonResponse(model_to_dict(enrollment))
