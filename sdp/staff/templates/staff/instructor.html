@@ -272,7 +272,7 @@
             success(result,status,xhr) {
                 $("#viewModules .sortable").empty();
                 $.each(result.modules, function(index, value) {
-                    $('#viewModules .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a></li>");
+                    $('#viewModules .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
                 });
             }
         });
@@ -359,7 +359,7 @@
                 $.each(result.modules, function(index, value) {
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
-                        $('#viewComponents .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a>");
+                        $('#viewComponents .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
                     });
                 });
             }
@@ -368,7 +368,7 @@
 
     //display component content
     $('#viewComponents').on('click','li a', function() {
-    var thisComponent = $(this).attr('rel');
+        var thisComponent = $(this).attr('rel');
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
             type: 'GET',
@@ -379,10 +379,31 @@
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
                         if (data.id == thisComponent)
-                            $('#componentContent').append("<p>" + data.content + "</p>");
+                            $('#componentContent').append("<p>" + data.content + "</p><button rel='" + data.id + "' type='button'>Remove This Component</button>");
                     });
                 });
             }
+        });
+    });
+
+    //remove a component
+    $('#componentContent').on('click','button', function() {
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + $(this).attr('rel') + '/remove',
+            type: 'POST',
+            data: JSON.stringify({contentType : 'text'}),
+            dataType: 'json',
+            beforeSend(xhr) {
+                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+            },
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else {
+                    loadComponents();
+                }
+            }
+
         });
     });
 
