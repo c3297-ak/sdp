@@ -1,1 +1,224 @@
-<h1>PLEASE UPDATE templates/staff/admin.html</h1>
+{% extends "staff/header.html" %}
+{% block content %}
+<div class="container-fluid">
+	<div id="roleOptions" class="row">
+		<div class="col-md-6"><button id="viewStaffBtn" class="btn btn-primary btn-block btn-lg">Manage Staff</button></div>
+		<div class="col-md-6"><button id="viewCategoryBtn" class="btn btn-block btn-lg" style="background:#111111;color:white">Manage Categories</button></div>
+	</div>
+	<hr>
+	<div id='viewStaff' class="row">
+		<h3 align="center">Change Role</h3>
+		<form id='changeRoleForm' class="form-inline">
+			<div class="col-md-12">
+			<div class="form-group">
+				<label for="theUsername">Username:</label>
+				<input type="text" class="form-control" id="theUsername" placeholder="Enter Username" name="username" value="">
+			
+			<!--<div class="form-control">-->
+				<label for="theRole">Role:</label>
+				<select class="form-control" id="theRole" name="role">
+					<option value='admin' selected>Administrator</option>
+					<option value='instructor'>Instructor</option>
+					<option value='hr'>Human Resource</option>
+				</select>
+
+				<input class="btn btn-primary btn-block" type='button' onclick='addRole()' value='Add Role'>
+			</div>
+			
+			</div>
+		</form>
+		</div>	
+	</div>
+	<hr>
+	<div id='staffTable' class="row">
+		<div class="col-md-12">
+			<h3 align="center">Staff Table</h3>
+			<table class="table table-bordered" style="border-color: white">
+				<thead>
+					<tr>
+						<th>Username</th>
+						<th>Administrator</th>
+						<th>Instructor</th>
+						<th>Participant</th>
+						<th>Human Resources</th>
+					</tr>
+				</thead>
+				<tbody id="eachStaffPermission">
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<hr>
+	<div id="staffList">
+		<h3 align="center">Staff List</h3>
+		<div id='admins'>
+			<b>Administrators</b>
+			<div id='administratorList'></div>
+		</div>
+		<div id='instructors'>
+			<b>Instructors</b>
+			<div id='instructorList'></div>
+		</div>
+		<div id='participants'>
+			<b>Participants</b>
+			<div id='participantList'></div>
+		</div>
+		<div id='hrs'>
+			<b>Human Resources</b>
+			<div id='humanResourceList'></div>
+		</div>
+	</div>
+</div>
+	
+
+<div id='viewCatogories'></div>
+
+<script type='text/javascript'>
+	//initial state
+	$('#viewStaff').show();
+    $('#viewCategories').hide();
+    loadAllStaff();
+
+    //page control logic
+    $('#viewStaffBtn').on('click',function(){
+        $('#viewStaff').show();
+        $('#viewCategories').hide();
+        loadAllStaff();
+    });
+    $('#viewCategoryBtn').on('click',function(){
+        $('#viewStaff').hide();
+        $('#viewCategories').show();
+    });
+
+	//load staff function
+	function loadStaff(staffRole) {
+		$.ajax({
+        	url: 'http://localhost:8000/staff/' + staffRole + 's',
+        	type: 'GET',
+        	dataType: 'json',
+        	success(result,status,xhr) {
+            	console.log(JSON.stringify(result));
+            	var data;
+            	switch (staffRole) {
+            		case 'administrator':
+            			data = result.all_administrators;
+            			break;
+            		case 'instructor':
+            			data = result.all_instructors;
+            			break;
+            		case 'participant':
+            			data = result.all_participants;
+            			break;
+            		case 'humanResource':
+            			data = result.all_humanResources;
+            			break;
+            	}          
+            	$.each(data, function(index, value) {
+            		$('#' + staffRole + 'List').append("<p>" + value.username + "</p>");
+            	});
+        	}
+    	});
+	}
+
+	//load table
+	function loadStaffTable() {
+		$.ajax({
+        	url: 'http://localhost:8000/staff/staffs',
+        	type: 'GET',
+        	dataType: 'json',
+        	success(result,status,xhr) {
+            	console.log(JSON.stringify(result));
+            	var data;
+            	data = result.staffs;
+
+            	$.each(data, function(index, value) {
+            		$.ajax({
+		        	url: 'http://localhost:8000/staff/' +value+ '/staffInfo',
+		        	type: 'GET',
+		        	async: 'false',
+		        	dataType: 'json',
+		        	success(result,status,xhr) {
+		            	console.log(JSON.stringify(result));
+		            	var element = document.createElement('tr');
+		            	jQuery('<tr/>', {
+		            		id: 'value'+index,
+		            	}).appendTo("#eachStaffPermission");
+		            	var theSelector = '#value'+index;
+		            	$(theSelector).append("<th>"+value+"</th>");
+		            	if(result.admin === true) {
+		            		$(theSelector).append("<td class=success value="+value+" name='admin' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	else {
+		            		$(theSelector).append("<td class=danger value="+value+" name='admin' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	if(result.instructor === true) {
+		            		$(theSelector).append("<td class=success value="+value+" name='instructor' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	else {
+		            		$(theSelector).append("<td class=danger value="+value+" name='instructor' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	if(result.participant === true) {
+		            		$(theSelector).append("<td class=success value="+value+" name='participant' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	else {
+		            		$(theSelector).append("<td class=danger value="+value+" name='participant' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	if(result.hr === true) {
+		            		$(theSelector).append("<td class=success value="+value+" name='hr' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            	else {
+		            		$(theSelector).append("<td class=danger value="+value+" name='hr' onClick='cell2FormAutofill()'></td>");
+		            	}
+		            }
+    				});
+            	});
+        	}
+    	});
+	}
+
+
+	//load all staff
+	function loadAllStaff() {
+		$('#administratorList').empty();
+		$('#instructorList').empty();
+		$('#participantList').empty();
+		$('#humanResourceList').empty();
+		loadStaff('administrator');
+		loadStaff('instructor');
+		loadStaff('participant');
+		loadStaff('humanResource');
+		loadStaffTable();
+	}
+
+	function cell2FormAutofill(event) {
+
+		if(!event) event = window.event;
+		var a = event.target;
+		var username = event.target.getAttribute('value');
+		var role = event.target.getAttribute('name');
+		if(role != 'participant'){
+			$("#theUsername").val(username);
+			$("#theRole").val(role);
+		}
+	}
+
+	//add a role
+	function addRole() {
+		var form = document.getElementById('changeRoleForm');
+		$.ajax({
+			url: 'http://localhost:8000/staff/assign_' + form.role.value,
+			type: 'POST',
+			data: JSON.stringify({username : form.username.value}),
+			dataType: 'json',
+			beforeSend(xhr) {
+				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+			},
+			success(result,status,xhr) {
+				loadAllStaff();
+			}
+		});
+	}
+
+</script>
+
+{% endblock %}

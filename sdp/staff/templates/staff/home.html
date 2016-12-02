@@ -1,52 +1,77 @@
 {% extends "staff/header.html" %}
 {% block content %}
 
-	<script type="text/javascript">
-		if (getCookie("staffId") === "") {
-			window.location.href = "loginPage";
-		}
-	</script>
-
-    <h1 style="text-align: center">AB Credit</h1>
-    <h2 style="text-align: center">SDP</h2>
-    <hr>
-
-    <div id="permissionButtons" style="text-align: center;"></div>
-
-    <hr>
+    <div id="wrapper" class="active">
+        <div id="sidebar-wrapper">
+            <ul id="nav_menu" class="sidebar">
+                <li class="nav_label">
+                    <a id="menu-toggle" href="#">Menu<span id="nav_label"><i id="nav_icon" class="fa-bars fa"></i></span></a></li>
+            </ul>
+            <ul id="theSidebar" class="sidebar">
+                <div id="permissionButtons">
+                    <!--<li><a>Participant<i class="sub_icon fa-graduation-cap fa"></i></a></li>
+                    <li><a>Instructor<i class="sub_icon fa-book fa"></i></a></li>
+                    <li><a>Human Resources<i class="sub_icon fa-area-chart fa"></i></a></li>
+                    <li><a>Administrator<i class="sub_icon fa-briefcase fa"></i></a></li>-->
+                </div>
+            </ul>
+        </div>
     
-    <div id="mainDisplay"></div>
+    <div id="page-content-wrapper">
+        <div class="page-content inset">
+            <div class="row">
+                <div class="col-md-12">
+                    <p align="center" class="well lead">AB Credit - Staff Development Platform</p>
+                    <div id="mainDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
 
     <script type="text/javascript">
-		staffId = getCookie('staffId');
+
+        $("#menu-toggle").click(function(event) {
+            event.preventDefault();
+            $("#wrapper").toggleClass("active");
+        });
+
+        if (getCookie("staffId") === "") {
+            window.location.href = "loginPage";
+        }
+
+        staffId = getCookie('staffId');
 
         updateDisplay("participant");
 
-        // Get permission for instructor
+        // Get permission for instructor (all of them actually)
         $.get("http://localhost:8000/staff/"+staffId+"/getStaffUsername",function(data, status){
             $.get("http://localhost:8000/staff/"+data.username+"/staffInfo",function(data, status){
-                $("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
+                $("#permissionButtons").append("<li><a onClick='updateDisplay(\"participant\")'>Participant<i class='sub_icon fa-graduation-cap fa'></i></a></li>");
+                //$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
                 if (data.instructor == true) {
-                    $("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
+                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
+                    $("#permissionButtons").append("<li><a onClick='updateDisplay(\"instructor\")'>Instructor<i class='sub_icon fa-book fa'></i></a></li>");
                 }
                 if (data.admin == true) {
-                    $("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
+                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
+                    $("#permissionButtons").append("<li><a onClick='updateDisplay(\"administrator\")'> Administrator<i class='sub_icon fa-briefcase fa'></i></a></li>");
                 }
                 if (data.hr == true) {
-                    $("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
+                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
+                    $("#permissionButtons").append("<li><a onClick='updateDisplay(\"hr\")'>Human Resources<i class='sub_icon fa-area-chart fa'></i></a></li>");
                 }
+                $("#permissionButtons").append("<li><a onClick=\"logout()\">Log Out<i class='sub_icon fa-power-off fa'></i></a></li>");
             });
         });
 
-        $("#permissionButtons").append("<button onClick=\"logout()\"> Log Out</button>");
-
-    	function logout() {
-    		document.cookie = "staffId="+";expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/";
-    		window.location.href = "loginPage";
-    	}
-    	function updateDisplay(userMode) {
-    		document.getElementById("mainDisplay").innerHTML='<object type="text/html" data="'+userMode+'" width="100%" height="600px"></object>';
-    	}
+        function logout() {
+            document.cookie = "staffId="+";expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/";
+            window.location.href = "loginPage";
+        }
+        function updateDisplay(userMode) {
+            document.getElementById("mainDisplay").innerHTML='<object type="text/html" data="'+userMode+'" width="100%" height="600px"></object>';
+        }
     </script>
 
 {% endblock %}
