@@ -6,6 +6,7 @@ from .models import Category
 from staff.models import Staff
 from sdp.utilities import *
 import os
+import datetime
 
 from django.shortcuts import render
 
@@ -751,6 +752,8 @@ def update_course_progress(request):
             new_status = post_data['new_status']
             if new_status == course.module_set.count():
                 enrollment.isCompleted = True
+                date = datetime.datetime.now()
+                enrollment.date_completed = date.strftime('%Y-%m-%d')
                 enrollment.save()
             if new_status <= course.module_set.count():
                 enrollment.modules_completed = new_status

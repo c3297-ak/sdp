@@ -88,6 +88,7 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     participant = models.ForeignKey(Staff, on_delete=models.CASCADE)
     modules_completed = models.IntegerField(default=0)
+    date_completed = models.CharField(max_length=100)
 
     def __str__(self):
         return 'Course: ' + self.course.courseCode + ", Participant: " + self.participant.username
