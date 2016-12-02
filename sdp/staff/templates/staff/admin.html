@@ -179,7 +179,11 @@
 				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
 			},
 			success(result,status,xhr) {
-				loadAllStaff();
+				if (result.hasOwnProperty('failure')){
+					alert(result.message);	
+				} else {
+					loadAllStaff();
+				}
 			}
 		});
 	}
@@ -195,7 +199,11 @@
 				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
 			},
 			success(result,status,xhr) {
-				loadAllCategory();
+				if (result.hasOwnProperty('failure')){
+					alert(result.message);
+				} else {
+					loadAllCategory();
+				}
 			}
 		});
 	}
@@ -211,7 +219,11 @@
 				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
 			},
 			success(result,status,xhr) {
-				loadAllCategory();
+				if (result.hasOwnProperty('failure')){
+					alert(result.message);	
+				} else {
+					loadAllCategory();	
+				}
 			}
 		});
 	}

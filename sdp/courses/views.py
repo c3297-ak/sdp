@@ -72,7 +72,7 @@ def remove_category(request):
             category_name = post_data['category_name']
             category = Category.objects.filter(name=category_name)
             if category.count() == 0:
-                return JsonResponse(model_to_dict(ERR_CATEGORY_DOES_NOT_EXIST))
+                return JsonResponse(ERR_CATEGORY_DOES_NOT_EXIST)
             else:
                 category[0].delete()
                 return JsonResponse({'success': True, 'all_categories': __get_all_categories()})

@@ -22,6 +22,7 @@ ERR_COURSE_ALREADY_PUBLISHED = {'failure': True, 'message': 'Course already publ
 ERR_CATEGORY_ALREADY_EXISTS = {'failure': True, 'message': 'Category already exists'}
 ERR_CATEGORY_DOES_NOT_EXIST = {'failure': True, 'message': 'Category does not exist'}
 ERR_CANNOT_RETAKE = {'failure': True, 'message': 'Cannot retake course. Complete it first to retake!'}
+ERR_PERMISSION_EXIST = {'failure': True, 'message': 'Already granted permission'}
 
 # File types
 TEXT = 'text'

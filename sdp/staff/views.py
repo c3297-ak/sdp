@@ -139,16 +139,18 @@ def assign_instructor_permission(request):
             if not all_fields_present(post_data, ['username']):
                 return_data = ERR_REQUIRED_FIELD_ABS
             else:
-                # Sourav - add logic for already existing instructor permission
                 staff = Staff.objects.filter(username=post_data['username'])
                 if staff.count() == 0:
                     return_data = ERR_STAFF_DOES_NOT_EXIST
-                elif staff[0].instructor_set.count() == 0:
-                    staff = staff[0]
-                    instructor = Instructor()
-                    instructor.staff = staff
-                    instructor.save()
-                    return_data = model_to_dict(staff)
+                else:
+                    if staff[0].instructor_set.count() == 0:
+                        staff = staff[0]
+                        instructor = Instructor()
+                        instructor.staff = staff
+                        instructor.save()
+                        return_data = model_to_dict(staff)
+                    else:
+                        return_data = ERR_PERMISSION_EXIST
         else:
             return_data = ERR_POST_EXPECTED
     except Exception as e:
@@ -169,11 +171,14 @@ def assign_admin_permission(request):
                 if staff.count() == 0:
                     return_data = ERR_STAFF_DOES_NOT_EXIST
                 else:
-                    staff = staff[0]
-                    admin = Administrator()
-                    admin.staff = staff
-                    admin.save()
-                    return_data = model_to_dict(staff)
+                    if staff[0].administrator_set.count() == 0:
+                        staff = staff[0]
+                        admin = Administrator()
+                        admin.staff = staff
+                        admin.save()
+                        return_data = model_to_dict(staff)
+                    else:
+                        return_data = ERR_PERMISSION_EXIST
         else:
             return_data = ERR_POST_EXPECTED
     except Exception as e:
@@ -194,11 +199,14 @@ def assign_hr_permission(request):
                 if staff.count() == 0:
                     return_data = ERR_STAFF_DOES_NOT_EXIST
                 else:
-                    staff = staff[0]
-                    hr = HumanResource()
-                    hr.staff = staff
-                    hr.save()
-                    return_data = model_to_dict(staff)
+                    if staff[0].humanresource_set.count() == 0:
+                        staff = staff[0]
+                        hr = HumanResource()
+                        hr.staff = staff
+                        hr.save()
+                        return_data = model_to_dict(staff)
+                    else:
+                        return_data = ERR_PERMISSION_EXIST
         else:
             return_data = ERR_POST_EXPECTED
     except Exception as e:
