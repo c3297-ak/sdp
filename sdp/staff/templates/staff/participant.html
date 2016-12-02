@@ -311,16 +311,43 @@
 
     //view course details
     function viewCourseDetails() {
+    	var arrayCourses = [];
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
             type: 'GET',
             dataType: 'json',
             success(result,status,xhr) {
+            	console.log(result);
                 $("#courseDetails").empty();
                 $("#courseDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
                 $("#courseDetails").append("<button type='button' class='btn btn-primary' rel='" + result.courseCode + "'>Enroll</button>");
             }
         });
+
+        $.ajax({
+            url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/enrolled',
+            async: false,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr){
+                $("#enrollmentList").empty();
+                console.log(JSON.stringify(result));
+                $.each(result.course_list, function(index, value) {
+                    /*$("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");
+                    if(!value.isCompleted)
+                        $("#enrollmentList").append("<button type='button' class='btn btn-danger'rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop Course</button>");   */
+                    arrayCourses[index] = value;
+                });
+                console.log("From second rec: ");
+                console.log(arrayCourses);
+                console.log(arrayCourses.length);
+
+                console.log(arrayCourses[0].isCompleted);
+                console.log(arrayCourses[1].isCompleted);
+
+            }
+        });
+
     }
 
     //enroll in a course
