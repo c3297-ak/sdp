@@ -14,6 +14,7 @@ ERR_POST_EXPECTED = {'failure': True, 'message': 'Use POST request'}
 ERR_GET_EXPECTED = {'failure': True, 'message': 'Use GET request'}
 ERR_ALREADY_ENROLLED_ONE = {'failure': True, 'message': 'Already enrolled in one course'}
 ERR_ALREADY_ENROLLED_CURR = {'failure': True, 'message': 'Already enrolled in this course'}
+ERR_ALREADY_COMPLETED_COURSE = {'failure': True, 'message': 'Already completed the course'}
 ERR_ENROLLMENT_RECORD_DOES_NOT_EXIST = {'failure': True, 'message': 'No enrollment record'}
 ERR_PARTICIPANT_INSTRUCT_SAME = {'failure': True, 'message': 'You cannot enroll in a course you created'}
 ERR_COURSE_NOT_PUBLISHED = {'failure': True, 'message': 'You cannot enroll in a course that is not published'}

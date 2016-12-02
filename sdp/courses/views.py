@@ -249,6 +249,8 @@ def index(request):
                     data = model_to_dict(course)
                     data['category_name'] = course.category.name
                     courses.append(data)
+
+
             return JsonResponse({"all_courses": courses})
         else:
             return JsonResponse(ERR_GET_EXPECTED)
@@ -585,7 +587,7 @@ def upload_component(request, course_code, module_seq):
             destination.write(chunk)
         destination.close()
         return JsonResponse({'success': True, 'file_path': relative_path,
-                             'filename': str(file)})
+                             'filename': str(file), 'base_folder': settings.MEDIA_URL})
     else:
         return JsonResponse(ERR_POST_EXPECTED)
 
@@ -661,6 +663,10 @@ def enroll(request, course_code):
                 return_data = ERR_ALREADY_ENROLLED_CURR
             else:
                 return_data = ERR_ALREADY_ENROLLED_ONE
+        elif Enrollment.objects.filter(course__courseCode=course.courseCode,
+                                       participant_id=staff_id, isCompleted=True).count() > 0:
+            # already completed this course
+            return_data = ERR_ALREADY_COMPLETED_COURSE
         elif staff_id == course.instructor.id:
             # cannot enroll in the same course created
             return_data = ERR_PARTICIPANT_INSTRUCT_SAME
@@ -721,34 +727,41 @@ def get_completed_participants(request, course_code):
 # records the progress of a participant for the course
 def update_course_progress(request):
     # POST body must contain course_id, staff_id, new_status (the number of modules completed from start)
-    if request.method == 'POST':
-        post_data = json.loads(request.body.decode('utf-8'))
+    try:
+        if request.method == 'POST':
+            post_data = json.loads(request.body.decode('utf-8'))
 
-        if not all_fields_present(post_data, ['course_id', 'staff_id', 'new_status']):
-            return JsonResponse(ERR_REQUIRED_FIELD_ABS)
+            if not all_fields_present(post_data, ['course_id', 'staff_id', 'new_status']):
+                return JsonResponse(ERR_REQUIRED_FIELD_ABS)
 
-        course = Course.objects.filter(pk=post_data['course_id'])
-        if course.count() == 0:
-            return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+            course = Course.objects.filter(pk=post_data['course_id'])
+            if course.count() == 0:
+                return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
 
-        staff = Staff.objects.filter(pk=post_data['staff_id'])
-        if staff.count() == 0:
-            return JsonResponse(ERR_STAFF_DOES_NOT_EXIST)
+            staff = Staff.objects.filter(pk=post_data['staff_id'])
+            if staff.count() == 0:
+                return JsonResponse(ERR_STAFF_DOES_NOT_EXIST)
 
-        enrollment = Enrollment.objects.filter(course=course, participant=staff)
-        if enrollment.count() == 0:
-            return JsonResponse(ERR_ENROLLMENT_RECORD_DOES_NOT_EXIST)
+            enrollment = Enrollment.objects.filter(course=course, participant=staff)
+            if enrollment.count() == 0:
+                return JsonResponse(ERR_ENROLLMENT_RECORD_DOES_NOT_EXIST)
 
-        course = course[0]
-        enrollment = enrollment[0]
-        new_status = post_data['new_status']
-        if new_status == course.module_set.count():
-            enrollment.isCompleted = True
-        if new_status <= course.module_set.count():
-            enrollment.modules_completed = new_status
-            enrollment.save()
+            course = course[0]
+            enrollment = enrollment[0]
+            new_status = post_data['new_status']
+            if new_status == course.module_set.count():
+                enrollment.isCompleted = True
+                enrollment.save()
+            if new_status <= course.module_set.count():
+                enrollment.modules_completed = new_status
+                enrollment.save()
 
-    return JsonResponse(model_to_dict(enrollment))
+            return JsonResponse(model_to_dict(enrollment))
+        else:
+            return JsonResponse(ERR_POST_EXPECTED)
+    except Exception as e:
+        print(e)
+        return JsonResponse(ERR_INTERNAL_ERROR)
 
 
 # function to drop a course
@@ -843,7 +856,7 @@ def uploadfiletest(request):
 
 def removefiletest(request):
     # post_data = json.loads(request.body.decode('utf-8'))
-    path = os.path.join(settings.MEDIA_ROOT, 'Assignment3_questions.pdf')
+    path = os.path.join(settings.MEDIA_ROOT, 'trolltunga.jpg')
     os.remove(path)
     return JsonResponse({'success': True})
 
