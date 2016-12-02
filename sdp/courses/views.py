@@ -664,11 +664,10 @@ def enroll(request, course_code):
             return_data = ERR_STAFF_DOES_NOT_EXIST
         elif not course.isPublished:
             return_data = ERR_COURSE_NOT_PUBLISHED  # check if course published
-        elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0:
+        elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0\
+                or Enrollment.objects.filter(participant_id=staff_id, isCompleted=True,
+                                             modules_completed__lt=course.module_set.count()):
             # already in one course
-            if Enrollment.objects.filter(participant_id=staff_id)[0].course.courseCode == course.courseCode:
-                return_data = ERR_ALREADY_ENROLLED_CURR
-            else:
                 return_data = ERR_ALREADY_ENROLLED_ONE
         elif Enrollment.objects.filter(course__courseCode=course.courseCode,
                                        participant_id=staff_id, isCompleted=True).count() > 0:
@@ -797,8 +796,12 @@ def drop_course(request):
 
             # delete enrollment record
             enrollment = enrollment[0]
-            enrollment.delete()
-            return JsonResponse({'success': True, 'message': 'Course successfully dropped'})
+            if enrollment.isCompleted:
+                enrollment.modules_completed = enrollment.course.module_set.count()
+                enrollment.save()
+            else:
+                enrollment.delete()
+            return JsonResponse({'success': True, 'message': 'Current course successfully dropped'})
         else:
             return JsonResponse(ERR_POST_EXPECTED)
     except Exception as e:
