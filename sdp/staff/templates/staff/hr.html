@@ -111,6 +111,7 @@
 		else{
 			//console.log(form.username.value);
 			var i;
+			var output = "";
 			for (i = 0; i<numRecords;i++){
 				$.ajax({
 					url: 'http://localhost:8000/courses/' + arrayOfCourseIDs[i] + '/completed',
@@ -121,18 +122,25 @@
 						var num = result.completed_enrolls.length;
 						//console.log(result.completed_enrolls.length);
 						var j;
+
 						for (j = 0; j<num;j++) {
 							//console.log(result.completed_enrolls[j].participant_info.username);
 							//console.log("This is the form value: " + form.username.value);
 
 							if(result.completed_enrolls[j].participant_info.username === form.username.value) {
-									$("#courseListByParticipant").append("<p>"+arrayOfCourses[i]+"<p>");
+									//$("#courseListByParticipant").append("<p>"+arrayOfCourses[i]+"<p>");
+									output = output + "<tr><td>"+arrayOfCourses[i]+"</td><td>"+result.completed_enrolls[j].date_completed+"<td></tr>";
 							}
 						}
-						
+
 					}
 				});
 
+			}
+			if (output != "") {
+				$("#courseListByParticipant").append("<table style='border-color: transparent'><thead><col width='400'><col width='120'><td>Course</td><td>Completion Date</td></thead><tbody>"+output+"</tbody><table>");	
+			} else {
+				$("#courseListByParticipant").append("Participant has not completed a course yet");
 			}
 	
 		}
@@ -154,10 +162,16 @@
 				success(result,status,xhr) {
 					var numRecords = result.completed_enrolls.length;
 					var i;
-					for (i = 0; i<numRecords;i++) {
-						$("#participantListByCourse").append("<p>"+result.completed_enrolls[i].participant_info.username+"<p>");
-					}
+					var output = "";
 					
+					for (i = 0; i<numRecords;i++) {
+						output = output + "<tr><td>"+result.completed_enrolls[i].participant_info.username+"</td><td>"+result.completed_enrolls[i].date_completed+"<td></tr>";
+					}
+					if (output != "") {
+						$("#participantListByCourse").append("<table style='border-color: transparent'><thead><col width='100'><col width='120'><td>Username</td><td>Completion Date</td></thead><tbody>"+output+"</tbody><table>");	
+					} else {
+						$("#participantListByCourse").append("No participant has completed a course yet");
+					}
 				}
 			});
 	}	
