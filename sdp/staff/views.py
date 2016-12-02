@@ -300,7 +300,7 @@ def courselist_instructor(request, staff_id):
                 return_data = dict()
                 courses = []
                 for course in Course.objects.filter(instructor=staff):
-                    data = {'courseCode': course.courseCode, 'title': course.title, 'isPublished': course.isPublished, 'category': course.category.name}
+                    data = {'courseCode': course.courseCode, 'title': course.title, 'isPublished': course.isPublished, 'category': course.category.name, 'description':course.description}
                     courses.append(data)
                 return_data['course_list'] = courses
             else:
