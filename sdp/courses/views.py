@@ -334,7 +334,7 @@ def update_module_content(request, course_code, module_seq):
         if module.count() == 0:
             return JsonResponse(ERR_MOD_DOES_NOT_EXIST)
         module = module[0]
-        module.moduleTitle = post_data['module']
+        module.moduleTitle = post_data['moduleTitle']
         module.save()
         return JsonResponse(model_to_dict(module))
     else:
