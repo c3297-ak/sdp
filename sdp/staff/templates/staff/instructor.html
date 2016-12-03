@@ -63,12 +63,12 @@
         <form id="addModuleForm">
             <div class="container-fluid">
                 <div class="form-group">
-                    <label for="theModuleTitle">Module Title:</label>
-                    <input type="text" class="form-control" name="moduleTitle" placeholder="Enter Module Title" id="theModuleTitle">
+                    <label for="theSeqNum">Module Number:</label>
+                    <input type="text" class="form-control" name="sequenceNumber" placeholder="Enter Module Sequence Number">
                 </div>
                 <div class="form-group">
-                    <label for="theSeqNum">Sequence Number:</label>
-                    <input type="text" class="form-control" name="sequenceNumber" placeholder="Enter Module Sequence Number">
+                    <label for="theModuleTitle">Module Title:</label>
+                    <input type="text" class="form-control" name="moduleTitle" placeholder="Enter Module Title" id="theModuleTitle">
                 </div>
                     <input type="button" class="btn btn-default" value='Add Module' onclick="addModule()">
             </div>
@@ -121,7 +121,7 @@
         <form id="addComponentForm">
             <div class="container-fluid">
                 <div class="form-group">
-                    <label for="theOrder">Order:</label>
+                    <label for="theOrder">Component Number:</label>
                     <input type="text" class="form-control" name="order" placeholder="Enter Component Order" id="theOrder">
                 </div>
                 <div class="form-group">
@@ -141,6 +141,7 @@
                     <input id='uploadInput' type="file">
                 </div> 
                     <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
+                    <input type="button" class="btn btn-default" value='Update Component' onclick="updateComponent()">
             </div>
             <!--Order: <input type="text" name="order" placeholder="Component Order"> <br>
             Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
@@ -379,24 +380,44 @@
 
     //publish a course
     $('#courseList').on('click', 'button.publish', function() {
-        cf = confirm("Please confirm that you want to publish this course");
-        if (cf) {
-            $.ajax({
-                url: 'http://localhost:8000/courses/' + $(this).attr('rel') + '/publish',
-                type: 'POST',
-                dataType: 'json',
-                beforeSend(xhr) {
-                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-                },
-                success(result,status,xhr) {
-                    if (result.hasOwnProperty('failure'))
-                        alert(result.message);
-                    else {
-                        loadCourses();
+        var courseCode = $(this).attr('rel');
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + courseCode,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $('#componentList').empty();
+                $('#componentContent').empty();
+                var noComponent = true;
+                $.each(result.modules, function(index, value) {
+                    if (value.components[0] != null) {
+                        noComponent = false;
                     }
-                }
-            });
-        }
+                });
+                if (!noComponent) {
+                    cf = confirm("Please confirm that you want to publish this course");
+                    if (cf) {
+                        $.ajax({
+                            url: 'http://localhost:8000/courses/' + courseCode + '/publish',
+                            type: 'POST',
+                            dataType: 'json',
+                            beforeSend(xhr) {
+                                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                            },
+                            success(result,status,xhr) {
+                                if (result.hasOwnProperty('failure'))
+                                    alert(result.message);
+                                else {
+                                    loadCourses();
+                                }
+                            }
+                        });
+                    }
+
+                } else 
+                    alert('You cannot publish a course that has no component');
+            }
+        });
     });
 
     //remove a course
@@ -622,10 +643,16 @@
 
     //remove a component
     $('#componentContent').on('click','button', function() {
+        var thisComponent = $(this).attr('rel');
+        var contentType = $(this).attr('ral');
+        removeComponent(thisComponent, contentType);
+    });
+
+       function removeComponent(thisComponent, contentType) { 
         $.ajax({
-            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + $(this).attr('rel') + '/remove',
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + thisComponent + '/remove',
             type: 'POST',
-            data: JSON.stringify({contentType : $(this).attr('ral')}),
+            data: JSON.stringify({contentType : contentType}),
             dataType: 'json',
             beforeSend(xhr) {
                 xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
@@ -639,7 +666,7 @@
             }
 
         });
-    });
+    }
 
     //upload file
     function uploadFile() {
@@ -695,6 +722,30 @@
             uploadFile();
         else 
             requestAddComponent(form.content.value);
+    }
+
+    function updateComponent() {
+        var form = document.getElementById('addComponentForm');
+        var thisComponentOrder = form.order.value;
+        var contentType = form.contentType.value;
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse,
+            type: 'GET',
+            dataType: 'json',
+            success(result,status,xhr) {
+                $('#componentContent').empty();
+                $.each(result.modules, function(index, value) {
+                    if (value.sequenceNumber == thisModule)
+                    $.each(value.components, function(index, data) {
+                        if (data.order == thisComponentOrder) {
+                            removeComponent(data.id, contentType);
+                            addComponent();
+                        }
+                    });
+                });
+            }
+        });
+
     }
 </script>
 
