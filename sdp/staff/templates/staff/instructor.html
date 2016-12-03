@@ -5,52 +5,60 @@
         <h3 style='text-align:center'>My Courses</h3>
         <div id="courseList"></div>
         
-        <h3 style='text-align:center'>Add a Course</h3>
-        <form id="addCourseForm">
-            <div class="container-fluid">
-                <div class="form-group">
-                    <label for="theCoursecode">Course Code</label>
-                    <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
-                </div>
-                <div class="form-group">
-                <label for="theCategory">Category</label>
-                    <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
-                </div>
-                <div class="form-group">
-                    <label for="theTitle">Title</label>
-                    <input class="form-control" name='title' placeholder="Enter Course Title" id="theTitle">
-                </div>
-                <div class="form-group">
-                    <label for="theDesc">Description</label>
-                    <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
-                </div>
-                <input type="button" value='Add Course' class="btn btn-default" onclick="addCourse()">
-            </div>
-        </form>
-        
-        <h3 style='text-align:center'>Update Course Information</h3>
-        <form id="updateCourseForm">
-            <div class="container-fluid">
-                <div class="form-group">
-                    <label for="theOldCourseCode">Old Course Code</label>
-                    <input class="form-control" type="text" name="oldCourseCode" placeholder="Enter the old Course Code" id="theOldCourseCode">
-                </div>
-                <div class="form-group">
-                    <label for="theCoursecode">Course Code</label>
-                    <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
-                </div>
-                <div class="form-group">
+        <div id="roleOptions" class="row">
+            <div class="col-md-6"><button id="addCourseButton" class="btn btn-primary btn-block btn-lg">Add Course</button></div>
+            <div class="col-md-6"><button id="updateCourseButton" class="btn btn-block btn-lg">Update Course Information</button></div>
+        </div>
+        <div id="addCourseFormHolder">
+            <h3 style='text-align:center'>Add a Course</h3>
+            <form id="addCourseForm">
+                <div class="container-fluid">
+                    <div class="form-group">
+                        <label for="theCoursecode">Course Code</label>
+                        <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
+                    </div>
+                    <div class="form-group">
                     <label for="theCategory">Category</label>
-                    <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
+                        <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="theTitle">Title</label>
+                        <input class="form-control" name='title' placeholder="Enter Course Title" id="theTitle">
+                    </div>
+                    <div class="form-group">
+                        <label for="theDesc">Description</label>
+                        <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
+                    </div>
+                    <input type="button" value='Add Course' class="btn btn-default" onclick="addCourse()">
                 </div>
-                <div class="form-group">
-                    <label for="theDesc">Description</label>
-                    <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
+            </form>
+        </div>
+        
+        <div id="updateCourseFormHolder">
+            <h3 id="updateCourseFormHeader" style='text-align:center'>Update Course Information</h3>
+            <form id="updateCourseForm">
+                <div class="container-fluid">
+                    <input class="form-control" type="hidden" id="oldCourseCode" name="oldCourseCode">
+                    <div class="form-group">
+                        <label for="theCoursecode">Updated Course Code</label>
+                        <input class="form-control" type="text" id="theCoursecode" name="courseCode" placeholder="Please enter Course Code">
+                    </div>
+                    <div class="form-group">
+                        <label for="theCategory">Updated Category</label>
+                        <select class="form-control" name='category' id="theCategory"><option value='' selected>All Categories</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="theTitle">Updated Title</label>
+                        <input class="form-control" name='title' placeholder="Enter Course Title" id="theTitle">
+                    </div>
+                    <div class="form-group">
+                        <label for="theDesc">Updated Description</label>
+                        <textarea class="form-control" rows='4' type="text" name="description" id="theDesc"></textarea>
+                    </div>
+                    <input type="button" value='Update Course' class="btn btn-default" onclick="updateCourse()">
                 </div>
-                <input type="button" value='Update Course' class="btn btn-default" onclick="updateCourse()">
-            </div>
-
-        </form>
+            </form>
+        </div>
     </div>
 
     <div id="viewModules">
@@ -219,10 +227,14 @@
 
     var thisCourse;
     var thisModule;
+    var thisModuleId;
     $('#viewModules').hide();
     $('#viewComponents').hide();
     $('#viewCourses').show();
     loadCourses();
+
+    $('#addCourseFormHolder').show();
+    $('#updateCourseFormHolder').hide();
 
     //load categories for course creation form
     $.ajax({
@@ -251,6 +263,11 @@
         $('#viewModules').hide();
         $('#viewComponents').hide();
         $('#viewCourses').show();
+        $('#addCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateCourseButton').attr('class', 'btn btn-block btn-lg');
+        $('#addCourseFormHolder').show();
+        $('#updateCourseFormHolder').hide();
+
     });
 
     $('a.backToModule').click(function() {
@@ -265,14 +282,19 @@
         thisCourse = $(this).attr('rel');
         loadModules();
         $('#viewModules').show();
+        $('#addCourseFormHolder').hide();
+        $('#updateCourseFormHolder').hide();
     });
 
     $('#viewModules').on('click','li a',function() {
         $('#viewModules').hide();
         $('#viewCourses').hide();
         thisModule = $(this).attr('rel');
+        thisModuleId = $(this).attr('relId');
         loadComponents();
         $('#viewComponents').show();
+        $('#addCourseFormHolder').hide();
+        $('#updateCourseFormHolder').hide();
     });
 
     $('#addComponentForm').on('change', 'select', function() {
@@ -284,6 +306,22 @@
             $('#uploadBtn').show();
         }
     });
+
+    //*********************************
+    // View Course Page Buttons Logic
+    //*********************************
+    $('#addCourseButton').on('click',function(){
+        $('#addCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateCourseButton').attr('class', 'btn btn-block btn-lg');
+        $('#addCourseFormHolder').show();
+        $('#updateCourseFormHolder').hide();
+    });
+    // $('#updateCourseButton').on('click',function(){
+    //     $('#updateCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+    //     $('#addCourseButton').attr('class', 'btn btn-block btn-lg');
+    //     $('#updateCourseFormHolder').show();
+    //     $('#addCourseFormHolder').hide();
+    // });
 
 
     //*********************************
@@ -304,6 +342,7 @@
                     if(!value.isPublished) {
                         $("#courseList").append("<button class='publish btn btn-primary' rel='" + value.courseCode + "' type='button'>Publish</button>");
                         $("#courseList").append("<button class='remove btn btn-danger' rel='" + value.courseCode + "' type='button' style='margin-left:5px'>Remove</button>");
+                        $("#courseList").append("<button class='retake btn btn-danger' rel='" + value.courseCode + "' type='button' style='margin-left:5px;background-color:green;border: 2px solid green'>Update</button>");
                     }
                 });
             }
@@ -373,6 +412,10 @@
                     form.category.value = "";
                     form.title.value = "";
                     form.description.value = "";
+                    $('#addCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+                    $('#updateCourseButton').attr('class', 'btn btn-block btn-lg');
+                    $('#addCourseFormHolder').show();
+                    $('#updateCourseFormHolder').hide();
                 }
             }
         });
@@ -442,6 +485,22 @@
         }
     });
 
+    $('#courseList').on('click', 'button.retake', function() {
+        var courseCode = $(this).attr('rel');
+
+        $('#updateCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#addCourseButton').attr('class', 'btn btn-block btn-lg');
+        $('#updateCourseFormHolder').show();
+        $('#addCourseFormHolder').hide();
+
+        $('#updateCourseFormHeader').html("["+courseCode+"] Update Course Information");
+
+        $('#updateCourseFormHolder #oldCourseCode').val(courseCode);
+
+
+
+    });
+
     //*********************************
     // MODULES
     //*********************************
@@ -455,7 +514,7 @@
             success(result,status,xhr) {
                 $("#moduleList").empty();
                 $.each(result.modules, function(index, value) {
-                    $('#moduleList').append("<li class='ui-state-default' id='"+value.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
+                    $('#moduleList').append("<li class='ui-state-default' id='"+value.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "' relId='" + value.id + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
                 });
             }
         });
@@ -566,10 +625,11 @@
                 $('#componentList').empty();
                 $('#componentContent').empty();
                 $.each(result.modules, function(index, value) {
-                    if (value.sequenceNumber == thisModule)
-                    $.each(value.components, function(index, data) {
-                        $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "' ral='" + data.contentType + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
-                    });
+                    if (value.id == thisModuleId) {
+                        $.each(value.components, function(index, data) {
+                            $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "' relOrder='" + data.order + "' ral='" + data.contentType + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
+                        });
+                    }
                 });
             }
         });
@@ -607,7 +667,9 @@
 
     //display component content
     $('#viewComponents').on('click','li a', function() {
-        var thisComponent = $(this).attr('rel');
+        console.log("View Component");
+        var thisComponentId = $(this).attr('rel');
+        var thisComponentOrder = $(this).attr('relOrder');
         var contentType = $(this).attr('ral');
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
@@ -616,19 +678,26 @@
             success(result,status,xhr) {
                 $('#componentContent').empty();
                 $.each(result.modules, function(index, value) {
-                    if (value.sequenceNumber == thisModule){
-                        console.log(value.sequenceNumber);
-                        console.log('This module: '+ thisModule);
+                    if (value['id'] == thisModuleId){
+                        console.log("Chosen Module -> "+value['moduleTitle']);
                         $.each(value.components, function(index, data) {
-                            if (data.order == thisComponent) {
-                                if (contentType == 'text')
+                            if (data['order'] == thisComponentOrder) {
+                                console.log("Target Component -> "+thisComponentOrder);
+                                console.log("Chosen Component -> "+data['sequenceNumber']);
+                                console.log("Chosen Content Type -> "+contentType);
+                                console.log("Chosen Content -> "+data.content);
+                                if (contentType == 'text') {
                                     $('#componentContent').append("<p>" + data.content + "</p>");
-                                else if (contentType == 'image')
+                                }
+                                else if (contentType == 'image') {
                                     $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
-                                else if (contentType == 'video')
+                                }
+                                else if (contentType == 'video') {
                                     $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
-                                else if (contentType == 'file')
+                                }
+                                else if (contentType == 'file') {
                                     $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
+                                }
                                 $('#componentContent').append("<button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button>");
                             }
                         });
@@ -641,14 +710,15 @@
 
     //remove a component
     $('#componentContent').on('click','button', function() {
-        var thisComponent = $(this).attr('rel');
+        var thisComponentId = $(this).attr('rel');
+        var thisComponentOrder = $(this).attr('relOrder');
         var contentType = $(this).attr('ral');
-        removeComponent(thisComponent, contentType);
+        removeComponent(thisComponentId, contentType);
     });
 
-       function removeComponent(thisComponent, contentType) {
+    function removeComponent(thisComponentId, contentType) {
         $.ajax({
-            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + thisComponent + '/remove',
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + thisComponentId + '/remove',
             type: 'POST',
             data: JSON.stringify({contentType : contentType}),
             dataType: 'json',
@@ -673,7 +743,7 @@
         form_data.append('upload', upload.files[0]);
 
         $.ajax({
-            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/upload_component',
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModuleId + '/upload_component',
             type: 'POST',
             data: form_data,
             processData: false,
