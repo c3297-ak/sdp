@@ -586,10 +586,10 @@ def update_component_order(request, course_code, module_seq):
 
 # uploads only the file to the server
 # to test
-def upload_component(request, course_code, module_seq):
+def upload_component(request, course_code, module_id):
     if request.method == 'POST':
         file = request.FILES['upload']
-        relative_path = os.path.join(str(course_code), str(module_seq), str(file))
+        relative_path = os.path.join(str(course_code), str(module_id), str(file))
         destination_path = os.path.join(settings.MEDIA_ROOT, relative_path)
 
         directory = os.path.dirname(destination_path)

@@ -82,7 +82,7 @@ urlpatterns = [
 
     # courses/<course_code>/modules/<module_seq>/upload_component
     # POST request to upload a component. Check function for required POST body
-    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_seq>[0-9]+)/upload_component$',
+    url(r'^(?P<course_code>[a-zA-Z0-9]+)/modules/(?P<module_id>[0-9]+)/upload_component$',
         views.upload_component, name='upload_component'),
 
 
