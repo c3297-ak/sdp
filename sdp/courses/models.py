@@ -89,6 +89,7 @@ class Enrollment(models.Model):
     participant = models.ForeignKey(Staff, on_delete=models.CASCADE)
     modules_completed = models.IntegerField(default=0)
     date_completed = models.CharField(max_length=100)
+    isRetaking = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Course: ' + self.course.courseCode + ", Participant: " + self.participant.username

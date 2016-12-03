@@ -82,6 +82,7 @@ def remove_category(request):
     else:
         return JsonResponse(ERR_POST_EXPECTED)
 
+
 # --------------------------------------------------- COURSES --------------------------------------------------------
 
 
@@ -187,11 +188,12 @@ def update_course_contents(request, course_code):
         except Exception as e:
             print(e)
             return JsonResponse(ERR_INTERNAL_ERROR)
-        
+
         # return json response
         return JsonResponse(return_data, safe=False)
     else:
         return JsonResponse(ERR_POST_EXPECTED)
+
 
 # function to return the course description
 def courseDescription(request, course_code):
@@ -257,7 +259,6 @@ def index(request):
                     data = model_to_dict(course)
                     data['category_name'] = course.category.name
                     courses.append(data)
-
 
             return JsonResponse({"all_courses": courses})
         else:
@@ -544,7 +545,7 @@ def addComponent(request, course_code, module_seq):
                     return JsonResponse(ERR_COMP_ORDER_EXISTS)
 
                 component = __create_new_component(post_data, module)  # create the appropriate component
-                
+
                 if component:
                     return_data = model_to_dict(component)
                     return_data['contentType'] = component.contentType
@@ -672,11 +673,16 @@ def enroll(request, course_code):
             return_data = ERR_STAFF_DOES_NOT_EXIST
         elif not course.isPublished:
             return_data = ERR_COURSE_NOT_PUBLISHED  # check if course published
-        elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0\
-                or Enrollment.objects.filter(participant_id=staff_id, isCompleted=True,
-                                             modules_completed__lt=course.module_set.count()).count() > 0:
+        elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0 \
+                or Enrollment.objects.filter(participant_id=staff_id, isRetaking=True).count() > 0:
+            # e = Enrollment.objects.filter(participant_id=staff_id, isRetaking=True)[0]
+            # print('Course: ', e.course.title)
+            # print('modules completed: ', e.modules_completed)
+            # print(type(e.modules_completed))
+            # print(type(e.course.module_set.count()))
+            # print('module count: ', e.course.module_set.count())
             # already in one course
-                return_data = ERR_ALREADY_ENROLLED_ONE
+            return_data = ERR_ALREADY_ENROLLED_ONE
         elif Enrollment.objects.filter(course__courseCode=course.courseCode,
                                        participant_id=staff_id, isCompleted=True).count() > 0:
             # already completed this course
@@ -706,10 +712,11 @@ def get_enrolled_participants(request, course_code):
             enrollments = Enrollment.objects.filter(course__courseCode=course_code)
             all_enrolls = []
             for enrollment in enrollments:
-                participant = Staff.objects.get(id=enrollment.participant.id)
-                enrollment = model_to_dict(enrollment)
-                enrollment['participant_info'] = {'username': participant.username}
-                all_enrolls.append(enrollment)
+                if enrollment.isRetaking or not enrollment.isCompleted:
+                    participant = Staff.objects.get(id=enrollment.participant.id)
+                    enrollment = model_to_dict(enrollment)
+                    enrollment['participant_info'] = {'username': participant.username}
+                    all_enrolls.append(enrollment)
             return_data = {'all_enrolls': all_enrolls}
     except Exception as e:
         print(e)
@@ -765,6 +772,7 @@ def update_course_progress(request):
             new_status = post_data['new_status']
             if new_status == course.module_set.count():
                 enrollment.isCompleted = True
+                enrollment.isRetaking = False
                 date = datetime.datetime.now()
                 enrollment.date_completed = date.strftime('%Y-%m-%d')
                 enrollment.save()
@@ -773,7 +781,7 @@ def update_course_progress(request):
                 enrollment.save()
 
             return JsonResponse(model_to_dict(enrollment))
-        else: 
+        else:
             return JsonResponse(ERR_POST_EXPECTED)
     except Exception as e:
         print(e)
@@ -806,6 +814,7 @@ def drop_course(request):
             enrollment = enrollment[0]
             if enrollment.isCompleted:
                 enrollment.modules_completed = enrollment.course.module_set.count()
+                enrollment.isRetaking = False
                 enrollment.save()
             else:
                 enrollment.delete()
@@ -843,7 +852,13 @@ def retake_course(request):
             if not enrollment.isCompleted:
                 return JsonResponse(ERR_CANNOT_RETAKE)
 
+            if Enrollment.objects.filter(participant=staff, isCompleted=False).count() > 0 \
+                    or Enrollment.objects.filter(participant=staff, isRetaking=True).count() > 0:
+                # already in one course
+                return JsonResponse(ERR_ALREADY_ENROLLED_ONE)
+
             enrollment.modules_completed = 0
+            enrollment.isRetaking = True  # set the isRetaking flag
             enrollment.save()
             return JsonResponse(model_to_dict(enrollment))
         else:
@@ -851,6 +866,7 @@ def retake_course(request):
     except Exception as e:
         print(e)
         return JsonResponse(ERR_INTERNAL_ERROR)
+
 
 # --------------------------------------------------EXPERIMENTAL (REMOVE) ---------------------------------------
 
