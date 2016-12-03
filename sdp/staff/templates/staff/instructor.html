@@ -438,6 +438,9 @@
                         xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
                     },
                     success(result,status,xhr) {
+                        if (result.hasOwnProperty('failure')){
+                            alert(result.message);  
+                        }
                         loadModules();
                     }
                 });
@@ -556,6 +559,9 @@
                         xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
                     },
                     success(result,status,xhr) {
+                        if (result.hasOwnProperty('failure')){
+                            alert(result.message);  
+                        }
                         loadComponents();
                     }
                 });
