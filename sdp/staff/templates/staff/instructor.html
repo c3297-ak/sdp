@@ -139,7 +139,7 @@
                 <div id='uploadBtn' class="form-group">
                     <label for="fileUpload">File Upload:</label>
                     <input id='uploadInput' type="file">
-                </div> 
+                </div>
                     <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
                     <input type="button" class="btn btn-default" value='Update Component' onclick="updateComponent()">
             </div>
@@ -229,9 +229,9 @@
         url: 'http://localhost:8000/courses/categories',
         type: 'GET',
         dataType: 'json',
-        success(result,status,xhr) {    
+        success(result,status,xhr) {
             $.each(result.all_categories, function(index, value) {
-                $('select[name=category]').append("<option value='" + value.name + "'>" + value.name + "</option>");          
+                $('select[name=category]').append("<option value='" + value.name + "'>" + value.name + "</option>");
             });
         }
     });
@@ -261,7 +261,7 @@
 
     $("#viewCourses").on('click','a',function(){
         $('#viewComponents').hide();
-        $('#viewCourses').hide();      
+        $('#viewCourses').hide();
         thisCourse = $(this).attr('rel');
         loadModules();
         $('#viewModules').show();
@@ -283,7 +283,7 @@
             $('#textContent').hide();
             $('#uploadBtn').show();
         }
-    }); 
+    });
 
 
     //*********************************
@@ -296,9 +296,9 @@
             url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/courselist_instructor',
             type: 'GET',
             dataType: 'json',
-            success(result,status,xhr) {      
+            success(result,status,xhr) {
                 $("#courseList").empty();
-                console.log(JSON.stringify(result))        
+                console.log(JSON.stringify(result))
                 $.each(result.course_list, function(index, value) {
                     $("#courseList").append("<p><a href='#' rel='" + value.courseCode + "'>" + value.courseCode + ": " + value.title + "</a><br>Category: " + value.category + "<br>Description: " + value.description + '</p>');
                     if(!value.isPublished) {
@@ -414,7 +414,7 @@
                         });
                     }
 
-                } else 
+                } else
                     alert('You cannot publish a course that has no component');
             }
         });
@@ -477,12 +477,12 @@
                     dataType: 'json',
                     success(result,status,xhr) {
                         if (result.hasOwnProperty('failure')){
-                            alert(result.message);  
+                            alert(result.message);
                         }
                         loadModules();
                     }
                 });
-                
+
             }
         });
     });
@@ -507,7 +507,7 @@
                     alert(result.message);
                 else {
                     loadModules();
-                }   
+                }
             }
         });
     }
@@ -595,12 +595,12 @@
                     dataType: 'json',
                     success(result,status,xhr) {
                         if (result.hasOwnProperty('failure')){
-                            alert(result.message);  
+                            alert(result.message);
                         }
                         loadComponents();
                     }
                 });
-                
+
             }
         });
     });
@@ -616,20 +616,24 @@
             success(result,status,xhr) {
                 $('#componentContent').empty();
                 $.each(result.modules, function(index, value) {
-                    if (value.sequenceNumber == thisModule)
-                    $.each(value.components, function(index, data) {
-                        if (data.id == thisComponent) {
-                            if (contentType == 'text')
-                                $('#componentContent').append("<p>" + data.content + "</p>");
-                            else if (contentType == 'image')
-                                $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
-                            else if (contentType == 'video')
-                                $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
-                            else if (contentType == 'file')
-                                $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
-                            $('#componentContent').append("<button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button>");
-                        }
-                    });
+                    if (value.sequenceNumber == thisModule){
+                        console.log(value.sequenceNumber);
+                        console.log('This module: '+ thisModule);
+                        $.each(value.components, function(index, data) {
+                            if (data.order == thisComponent) {
+                                if (contentType == 'text')
+                                    $('#componentContent').append("<p>" + data.content + "</p>");
+                                else if (contentType == 'image')
+                                    $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
+                                else if (contentType == 'video')
+                                    $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
+                                else if (contentType == 'file')
+                                    $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
+                                $('#componentContent').append("<button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button>");
+                            }
+                        });
+                    }
+
                 });
             }
         });
@@ -642,7 +646,7 @@
         removeComponent(thisComponent, contentType);
     });
 
-       function removeComponent(thisComponent, contentType) { 
+       function removeComponent(thisComponent, contentType) {
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + thisComponent + '/remove',
             type: 'POST',
@@ -705,16 +709,16 @@
                     alert(result.message);
                 else {
                     loadComponents();
-                }                
+                }
             }
         });
     }
 
-    function addComponent() { 
+    function addComponent() {
         var form = document.getElementById('addComponentForm');
-        if (form.contentType.value !== 'text') 
+        if (form.contentType.value !== 'text')
             uploadFile();
-        else 
+        else
             requestAddComponent(form.content.value);
     }
 
