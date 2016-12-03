@@ -475,9 +475,6 @@
                     type: 'POST',
                     data: JSON.stringify({"module_sequences": IDs}),
                     dataType: 'json',
-                    beforeSend(xhr) {
-                        xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-                    },
                     success(result,status,xhr) {
                         if (result.hasOwnProperty('failure')){
                             alert(result.message);  
@@ -596,9 +593,6 @@
                     type: 'POST',
                     data: JSON.stringify({"component_sequences": cData}),
                     dataType: 'json',
-                    beforeSend(xhr) {
-                        xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-                    },
                     success(result,status,xhr) {
                         if (result.hasOwnProperty('failure')){
                             alert(result.message);  
