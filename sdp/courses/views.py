@@ -572,7 +572,7 @@ def update_component_order(request, course_code, module_seq):
         if not course:
             return_data = ERR_COURSE_DOES_NOT_EXIST
         else:
-            module = course.module_set.filter(id=module_seq)
+            module = course.module_set.filter(sequenceNumber=module_seq)
             if module.count() == 0:
                 return_data = ERR_MOD_DOES_NOT_EXIST
             else:

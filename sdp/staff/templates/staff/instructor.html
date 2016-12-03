@@ -55,7 +55,7 @@
 
     <div id="viewModules">
         <h3 style="text-align: center"><a class='backToCourse' href='#'>Courses</a> | Modules</h3>
-        <ul class='sortable'></ul>
+        <ul class='sortable' id="moduleList"></ul>
 
         <hr>
 
@@ -112,7 +112,7 @@
     </div>
     <div id="viewComponents">
         <h3 style="text-align:center"><a class='backToCourse' href='#'>Courses</a> | <a class='backToModule' href='#'>Modules</a> | Components</h3>
-        <ul class='sortable'></ul>
+        <ul class='sortable' id="componentList"></ul>
         <hr>
         <h3 style="text-align:center">Content</h3>
         <div id='componentContent'></div>
@@ -412,13 +412,39 @@
             type: 'GET',
             dataType: 'json',
             success(result,status,xhr) {
-                $("#viewModules .sortable").empty();
+                $("#moduleList").empty();
                 $.each(result.modules, function(index, value) {
-                    $('#viewModules .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
+                    $('#moduleList').append("<li class='ui-state-default' id='"+value.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + value.sequenceNumber + "''><b>Module " + value.sequenceNumber + " : " + value.moduleTitle + "</b> - " + value.component_count + " components</a><div id='" + value.id + "'></div></li>");
                 });
             }
         });
     }
+
+    // Update db after finishing reordering module
+    $(function() {
+        $('#moduleList').sortable({
+            update: function(event, ui) {
+                var IDs = $("#moduleList li[id]").map(function() { return this.id; }).get();
+                $.each(IDs, function(index, value) {
+                    IDs[index] = {"id":IDs[index],"sequenceNumber":+index};
+                });
+                console.log(IDs);
+                $.ajax({
+                    url: 'http://localhost:8000/courses/' + thisCourse + '/update_module_order',
+                    type: 'POST',
+                    data: JSON.stringify({"module_sequences": IDs}),
+                    dataType: 'json',
+                    beforeSend(xhr) {
+                        xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                    },
+                    success(result,status,xhr) {
+                        loadModules();
+                    }
+                });
+                
+            }
+        });
+    });
 
 
     //add modules
@@ -496,17 +522,47 @@
             type: 'GET',
             dataType: 'json',
             success(result,status,xhr) {
-                $('#viewComponents .sortable').empty();
+                $('#componentList').empty();
                 $('#componentContent').empty();
                 $.each(result.modules, function(index, value) {
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
-                        $('#viewComponents .sortable').append("<li class='ui-state-default'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
+                        $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
                     });
                 });
             }
         });
     }
+
+    // Update db after finishing reordering comonents
+    $(function() {
+        $('#componentList').sortable({
+            update: function(event, ui) {
+                var cData = $("#componentList li[id]").map(function() { return this.id; }).get();
+                $.each(cData, function(index, value) {
+                    var input = cData[index].split("|");
+                    cData[index] = {"contentType":input[0],"component_id":input[1], "order":index};
+                });
+
+                var data = JSON.stringify({"component_sequences": cData})
+                console.log(data);
+
+                $.ajax({
+                    url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/update_component_order',
+                    type: 'POST',
+                    data: JSON.stringify({"component_sequences": cData}),
+                    dataType: 'json',
+                    beforeSend(xhr) {
+                        xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                    },
+                    success(result,status,xhr) {
+                        loadComponents();
+                    }
+                });
+                
+            }
+        });
+    });
 
     //display component content
     $('#viewComponents').on('click','li a', function() {
