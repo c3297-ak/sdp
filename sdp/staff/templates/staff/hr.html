@@ -1,6 +1,6 @@
 {% extends "staff/header.html" %}
 {% block content %}
-<div class="container-fluid" style="text-align: center;">
+<div class="container-fluid">
 
 	<div class="row">
 		<h3>Search courses completed by:</h3>
@@ -138,7 +138,7 @@
 
 			}
 			if (output != "") {
-				$("#courseListByParticipant").append("<table style='border-color:white;text-align:left' align='center'><thead><col width='400'><col width='120'><td><b>Course</b></td><td><b>Completion Date</b></td></thead><tbody>"+output+"</tbody><table>");	
+				$("#courseListByParticipant").append("<table style='border-color: transparent'><thead><col width='400'><col width='120'><td>Course</td><td>Completion Date</td></thead><tbody>"+output+"</tbody><table>");	
 			} else {
 				$("#courseListByParticipant").append("Participant has not completed a course yet");
 			}
@@ -168,7 +168,7 @@
 						output = output + "<tr><td>"+result.completed_enrolls[i].participant_info.username+"</td><td>"+result.completed_enrolls[i].date_completed+"<td></tr>";
 					}
 					if (output != "") {
-						$("#participantListByCourse").append("<table style='border-color:white;text-align:left' align='center'<thead><col width='100'><col width='120'><td><b>Username</b></td><td><b>Completion Date</b></td></thead><tbody>"+output+"</tbody><table>");	
+						$("#participantListByCourse").append("<table style='border-color: transparent'><thead><col width='100'><col width='120'><td>Username</td><td>Completion Date</td></thead><tbody>"+output+"</tbody><table>");	
 					} else {
 						$("#participantListByCourse").append("No participant has completed a course yet");
 					}
