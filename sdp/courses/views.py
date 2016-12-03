@@ -671,7 +671,7 @@ def enroll(request, course_code):
             return_data = ERR_COURSE_NOT_PUBLISHED  # check if course published
         elif Enrollment.objects.filter(participant_id=staff_id, isCompleted=False).count() > 0\
                 or Enrollment.objects.filter(participant_id=staff_id, isCompleted=True,
-                                             modules_completed__lt=course.module_set.count()):
+                                             modules_completed__lt=course.module_set.count()).count() > 0:
             # already in one course
                 return_data = ERR_ALREADY_ENROLLED_ONE
         elif Enrollment.objects.filter(course__courseCode=course.courseCode,
