@@ -3,7 +3,7 @@
 <div class="container-fluid">
 	<div id="roleOptions" class="row">
 		<div class="col-md-6"><button id="viewStaffBtn" class="btn btn-primary btn-block btn-lg">Manage Staff</button></div>
-		<div class="col-md-6"><button id="viewCategoryBtn" class="btn btn-block btn-lg" style="background:#111111;color:white">Manage Categories</button></div>
+		<div class="col-md-6"><button id="viewCategoryBtn" class="btn btn-block btn-lg">Manage Categories</button></div>
 	</div>
 	<hr>
 	<div id='viewStaff' class="row">
@@ -64,7 +64,7 @@
 	<div id='categoryTable' class="row">
 		<div class="col-md-12">
 			<h3 align="center">Category Table</h3>
-			<table class="table table-bordered" style="border-color: transparent">
+			<table class="table table-bordered" style="border-color: white">
 				<thead>
 					<tr>
 						<th>Category Name</th>
@@ -85,11 +85,15 @@
 
     //page control logic
     $('#viewStaffBtn').on('click',function(){
+    	$('#viewStaffBtn').attr('class', 'btn btn-primary btn-block btn-lg');
+    	$('#viewCategoryBtn').attr('class', 'btn btn-block btn-lg');
         $('#viewStaff').show();
         $('#viewCategories').hide();
         loadAllStaff();
     });
     $('#viewCategoryBtn').on('click',function(){
+    	$('#viewStaffBtn').attr('class', 'btn btn-block btn-lg');
+    	$('#viewCategoryBtn').attr('class', 'btn btn-primary btn-block btn-lg');
         $('#viewStaff').hide();
         $('#viewCategories').show();
         loadAllCategory();
@@ -120,28 +124,28 @@
 		            	var theSelector = '#value'+index;
 		            	$(theSelector).append("<th>"+value+"</th>");
 		            	if(result.admin === true) {
-		            		$(theSelector).append("<td class=success value="+value+" name='admin' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=success value="+value+" name='admin'></td>");
 		            	}
 		            	else {
-		            		$(theSelector).append("<td class=danger value="+value+" name='admin' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=danger value="+value+" name='admin' onClick='cell2FormAutofill()' style='text-align:center;font-weight:bold;'>Grant Permission</td>");
 		            	}
 		            	if(result.instructor === true) {
-		            		$(theSelector).append("<td class=success value="+value+" name='instructor' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=success value="+value+" name='instructor'></td>");
 		            	}
 		            	else {
-		            		$(theSelector).append("<td class=danger value="+value+" name='instructor' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=danger value="+value+" name='instructor' onClick='cell2FormAutofill()' style='text-align:center;font-weight:bold;'>Grant Permission</td>");
 		            	}
 		            	if(result.participant === true) {
-		            		$(theSelector).append("<td class=success value="+value+" name='participant' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=success value="+value+" name='participant'></td>");
 		            	}
 		            	else {
-		            		$(theSelector).append("<td class=danger value="+value+" name='participant' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=danger value="+value+" name='participant' onClick='cell2FormAutofill()' style='text-align:center;font-weight:bold;'>Grant Permission</td>");
 		            	}
 		            	if(result.hr === true) {
-		            		$(theSelector).append("<td class=success value="+value+" name='hr' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=success value="+value+" name='hr'></td>");
 		            	}
 		            	else {
-		            		$(theSelector).append("<td class=danger value="+value+" name='hr' onClick='cell2FormAutofill()'></td>");
+		            		$(theSelector).append("<td class=danger value="+value+" name='hr' onClick='cell2FormAutofill()' style='text-align:center;font-weight:bold;'>Grant Permission</td>");
 		            	}
 		            }
     				});
