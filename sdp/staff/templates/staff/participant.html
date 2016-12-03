@@ -65,8 +65,17 @@
 
     var thisCourse;	//CS100 examples
     var thisCourse_id; //integer id in db
-    var progress
+    var thisUsername;
+    var progress;
     $(document).ready(function() {
+        $.ajax({
+            url: 'http://localhost:8000/staff/'+getCookie('staffId')+'/getStaffUsername',
+            type: 'GET',
+            dataType: 'json',
+            success(result, status, xhr) {
+                thisUsername = result.username;
+            }
+        });
         loadEnrollment();    
         $('#viewCourses').hide();
         $('#viewEnrollment').show();
@@ -158,7 +167,7 @@
                 console.log(JSON.stringify(result));
                 $.each(result.course_list, function(index, value) {
                     $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");
-                    if(!value.isCompleted)
+                    if(!value.isCompleted || value.isRetaking)
                         $("#enrollmentList").append("<button type='button' class='btn btn-danger'rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop Course</button>");      
                 });
             }
@@ -284,6 +293,32 @@
 
     //load all courses
     function loadCourses() {
+        var completedCoursesIDs = [];
+        var createdCourses = [];
+        $.ajax({
+            url: 'http://localhost:8000/staff/'+thisUsername+'/courseCompleted',
+            async: false,
+            type: 'GET',
+            dataType: 'json',
+            success(result, status, xhr) {
+                $.each(result.completed_enrolls, function(index,value){
+                    completedCoursesIDs[index] = value.id;
+                });
+            }
+        });
+        $.ajax({
+            url: 'http://localhost:8000/staff/'+getCookie('staffId')+'/courselist_instructor',
+            async: false,
+            type: 'GET',
+            dataType: 'json',
+            success(result, status, xhr) {
+                //console.log('happening');
+                $.each(result.course_list, function(index,value){
+                    console.log(value.courseCode);
+                    createdCourses[index] = value.courseCode;
+                });
+            }
+        });
         $.ajax({
             url: 'http://localhost:8000/courses/',
             type: 'GET',
@@ -293,9 +328,19 @@
                 $.each(result.all_courses, function(index, value) {
                     if(value.isPublished) {
                         if($('select[name=category]').val() === 'All Categories') {
-                        	console.log('a');
-                            console.log(value);
-                            $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "' ral='"+ value.id+"'>" + value.courseCode + ": " + value.title + "</a><br> Category: " + value.category_name + "</p>");
+                        	//console.log(completedCoursesIDs);
+                            //console.log(value.id);
+                            //console.log($.inArray(value.id, completedCoursesIDs));
+                            if($.inArray(value.id, completedCoursesIDs) != -1) //display completed tag if completed
+                                $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "' ral='"+ value.id+"'>" + value.courseCode + ": " + value.title + "</a><span class=\"tag tag-success myTag-success\" style='margin-left:3px'>Completed!</span><br> Category: " + value.category_name + "</p>");
+                            else{ //display enrollable tag if enrollable
+                                console.log($.inArray(value.courseCode, createdCourses));
+                                if($.inArray(value.courseCode, createdCourses) != -1)
+                                    $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "' ral='"+ value.id+"'>" + value.courseCode + ": " + value.title + "</a><span class=\"tag myTag-owned\">Owned</span><br> Category: " + value.category_name + "</p>");
+                                else
+                                    $("#courseFilteredList").append("<p><a href='#' rel='" + value.courseCode + "' ral='"+ value.id+"'>" + value.courseCode + ": " + value.title + "</a><span class=\"tag myTag-enrollable\" style='margin-left:3px'>Enrollable!</span><br> Category: " + value.category_name + "</p>");      
+                            }
+
                         }
                         else {
                             console.log('b');
@@ -316,6 +361,20 @@
     	var arrayCourses = [];
     	var flag;
     	var i;
+        var createdCourses = [];
+        $.ajax({
+            url: 'http://localhost:8000/staff/'+getCookie('staffId')+'/courselist_instructor',
+            async: false,
+            type: 'GET',
+            dataType: 'json',
+            success(result, status, xhr) {
+                //console.log('happening');
+                $.each(result.course_list, function(index,value){
+                    console.log(value.courseCode);
+                    createdCourses[index] = value.courseCode;
+                });
+            }
+        });
     	$.ajax({
             url: 'http://localhost:8000/staff/' + getCookie('staffId') + '/enrolled',
             async: false,
@@ -334,7 +393,7 @@
         		}
             }
         });
-        console.log(arrayCourses[0]);
+        //console.log(arrayCourses[0]);
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
             type: 'GET',
@@ -343,10 +402,15 @@
             	console.log(result);
                 $("#courseDetails").empty();
                 $("#courseDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
-                if(!flag)
-                	$("#courseDetails").append("<button name='enrollBtn' type='button' class='btn btn-primary' rel='" + result.courseCode + "'>Enroll</button>");
+                if(!flag){
+                    console.log(result.courseCode);
+                    if($.inArray(result.courseCode, createdCourses) != -1)
+                	   $("#courseDetails").append("<button name='enrollBtn' type='button' class='btn btn-primary disabled' rel='" + result.courseCode + "'>Enroll</button>");
+                    else
+                        $("#courseDetails").append("<button name='enrollBtn' type='button' class='btn btn-primary' rel='" + result.courseCode + "'>Enroll</button>");
+                }
                 else {
-                	$("#courseDetails").append("<button name='retakeBtn' class='btn btn-primary' style=\"background: #00ff80; border-color: #00ff80\" rel='" + result.courseCode + "'>Retake</button>");
+                	$("#courseDetails").append("<button name='retakeBtn' class='btn btn-primary' style=\"background: #00ff80; border-color: #2CD453\" rel='" + result.courseCode + "'>Retake</button>");
                 }
             }
         });

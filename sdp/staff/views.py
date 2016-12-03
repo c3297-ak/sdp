@@ -281,7 +281,7 @@ def enrolled_courses(request, staff_id):
                 courses = []
                 for enrollment in Enrollment.objects.filter(participant=staff):
                     data = {'courseCode': enrollment.course.courseCode, 'title': enrollment.course.title,
-                            'progress': enrollment.modules_completed, 'isCompleted': enrollment.isCompleted}
+                            'progress': enrollment.modules_completed, 'isCompleted': enrollment.isCompleted, 'isRetaking' : enrollment.isRetaking}
                     courses.append(data)
                 return_data['course_list'] = courses
             else:

@@ -243,3 +243,34 @@ input, input::-webkit-input-placeholder {
     float: none;
     margin: 0 auto;
 }
+
+.myTag-enrollable{
+	font-size: 10px;
+	font-style: italic;
+	border-radius: 2px;
+	margin-left : 5px;
+	padding: 5px;
+	background-color: #2C32D4;
+	color: white;
+}
+
+.myTag-success{
+	font-size: 10px;
+	font-style: italic;
+	border-radius: 2px;
+	margin-left : 5px;
+	padding: 5px;
+	background-color: #2CD453;
+	color: white;
+
+}
+
+.myTag-owned{
+	font-size: 10px;
+	font-style: italic;
+	border-radius: 2px;
+	margin-left : 5px;
+	padding: 5px;
+	background-color: #C5C6EF;
+
+}
