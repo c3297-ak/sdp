@@ -274,3 +274,7 @@ input, input::-webkit-input-placeholder {
 	background-color: #C5C6EF;
 
 }
+
+.img-responsive {
+    margin: 0 auto;
+}
