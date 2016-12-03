@@ -364,6 +364,9 @@ def update_module_order(request, course_code):
         if not course:
             return_data = ERR_COURSE_DOES_NOT_EXIST
         else:
+            if course.isPublished:
+                return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
+
             for obj in post_data['module_sequences']:
                 module = course.module_set.filter(id=obj['id'])  # assumption: you will pass in the right module id
                 if module.count() > 0:
