@@ -126,16 +126,20 @@
                 </div>
                 <div class="form-group">
                     <label for="theContentType">Content Type:</label>
-                    <input type="text" class="form-control" name="contentType" placeholder="Enter Content Type" id="theContentType">
+                    <select name="contentType"><option value='text'>Text</option><option value='image'>Image</option><option value='file'>File</option><option value='video'>Video</option></select>
                 </div>
                 <div class="form-group">
                     <label for="theContentTitle">Content Title:</label>
                     <input type="text" class="form-control" name="contentTitle" placeholder="Enter Content Title" id="theContentTitle">
                 </div>
-                <div class="form-group">
-                    <label for="theContent">Content:</label>
+                <div id='textContent' class="form-group">
+                    <label for="theContent">Text Content:</label>
                     <textarea class="form-control" rows='4' type="text" name="content" id="theContent"></textarea>
                 </div>
+                <div id='uploadBtn' class="form-group">
+                    <label for="fileUpload">File Upload:</label>
+                    <input id='uploadInput' type="file">
+                </div> 
                     <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
             </div>
             <!--Order: <input type="text" name="order" placeholder="Component Order"> <br>
@@ -231,6 +235,12 @@
         }
     });
 
+    //hide and show textarea or upload field depending of contentType
+    if ($('#addComponentForm select').val() == 'text') {
+        $('#textContent').show();
+        $('#uploadBtn').hide();
+    }
+
 
     //*********************************
     // PAGE CONTROL LOGIC
@@ -262,7 +272,17 @@
         thisModule = $(this).attr('rel');
         loadComponents();
         $('#viewComponents').show();
-    })
+    });
+
+    $('#addComponentForm').on('change', 'select', function() {
+        if ($('#addComponentForm select').val() == 'text') {
+            $('#textContent').show();
+            $('#uploadBtn').hide();
+        } else {
+            $('#textContent').hide();
+            $('#uploadBtn').show();
+        }
+    }); 
 
 
     //*********************************
@@ -530,7 +550,7 @@
                 $.each(result.modules, function(index, value) {
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
-                        $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
+                        $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "' ral='" + data.contentType + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
                     });
                 });
             }
@@ -573,6 +593,7 @@
     //display component content
     $('#viewComponents').on('click','li a', function() {
         var thisComponent = $(this).attr('rel');
+        var contentType = $(this).attr('ral');
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse,
             type: 'GET',
@@ -582,8 +603,17 @@
                 $.each(result.modules, function(index, value) {
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
-                        if (data.id == thisComponent)
-                            $('#componentContent').append("<p>" + data.content + "</p><button rel='" + data.id + "' type='button' class='btn btn-danger'>Remove This Component</button>");
+                        if (data.id == thisComponent) {
+                            if (contentType == 'text')
+                                $('#componentContent').append("<p>" + data.content + "</p>");
+                            else if (contentType == 'image')
+                                $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
+                            else if (contentType == 'video')
+                                $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
+                            else if (contentType == 'file')
+                                $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
+                            $('#componentContent').append("<button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button>");
+                        }
                     });
                 });
             }
@@ -595,7 +625,7 @@
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/components/' + $(this).attr('rel') + '/remove',
             type: 'POST',
-            data: JSON.stringify({contentType : 'text'}),
+            data: JSON.stringify({contentType : $(this).attr('ral')}),
             dataType: 'json',
             beforeSend(xhr) {
                 xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
@@ -611,15 +641,38 @@
         });
     });
 
-    function addComponent() { 
-        form = document.getElementById('addComponentForm');
+    //upload file
+    function uploadFile() {
+        var upload = document.getElementById('uploadInput');
+        var form_data = new FormData();
+        form_data.append('upload', upload.files[0]);
+
+        $.ajax({
+            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/upload_component',
+            type: 'POST',
+            data: form_data,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success(result,status,xhr) {
+                if (result.hasOwnProperty('failure'))
+                    alert(result.message);
+                else
+                    requestAddComponent(result.file_path);
+            }
+        });
+    }
+
+    //send request to add component
+    function requestAddComponent(content) {
+        var form = document.getElementById('addComponentForm');
         $.ajax({
             url: "http://localhost:8000/courses/" + thisCourse + "/modules/" + thisModule + "/addComponent",
             type: 'POST',
             data: JSON.stringify({
                 order: form.order.value,
                 contentType: form.contentType.value,
-                content: form.content.value,
+                content: content,
                 contentTitle: form.contentTitle.value
             }),
             dataType: 'json',
@@ -634,6 +687,14 @@
                 }                
             }
         });
+    }
+
+    function addComponent() { 
+        var form = document.getElementById('addComponentForm');
+        if (form.contentType.value !== 'text') 
+            uploadFile();
+        else 
+            requestAddComponent(form.content.value);
     }
 </script>
 
