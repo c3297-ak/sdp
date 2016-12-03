@@ -434,15 +434,19 @@ def __get_all_components(module):
         # get all the components together
         for file_component in module.filecomponent_set.all():
             data = model_to_dict(file_component)
+            data['contentType'] = FILE
             components.append((data['order'], data))
         for image_component in module.imagecomponent_set.all():
             data = model_to_dict(image_component)
+            data['contentType'] = IMG
             components.append((data['order'], data))
         for text_component in module.textcomponent_set.all():
             data = model_to_dict(text_component)
+            data['contentType'] = TEXT
             components.append((data['order'], data))
         for video_component in module.videocomponent_set.all():
             data = model_to_dict(video_component)
+            data['contentType'] = VIDEO
             components.append((data['order'], data))
 
         # sort by order, ascending order
@@ -540,6 +544,7 @@ def addComponent(request, course_code, module_seq):
                 
                 if component:
                     return_data = model_to_dict(component)
+                    return_data['contentType'] = component.contentType
                 else:
                     return_data = {'failure': True, 'message': 'Component could not be created'}
     except Exception as e:

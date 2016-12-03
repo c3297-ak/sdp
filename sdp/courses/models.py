@@ -70,7 +70,7 @@ class FileComponent(Component):
 
 
 class ImageComponent(Component):
-    contentType = FILE
+    contentType = IMG
 
     def __str__(self):
         return 'Image component with order: ' + str(self.order) + ' in module with id: ' + str(self.module.id)
