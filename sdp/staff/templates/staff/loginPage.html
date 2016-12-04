@@ -12,7 +12,7 @@
 			<div class="main-login main-center">
 				<form id="theForm">
 					<div id="theName" class="form-group">
-						<label for="fname" class="cols-sm-2 control-label">Name</label>
+						<label for="fname" class="cols-sm-2 control-label">Name [Not Required]</label>
 						<div class="cols-sm-10">
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa-user fa" aria-hidden="true"></i></span>
@@ -39,6 +39,15 @@
 							</div>
 						</div>
 					</div>
+					<div id="registerPassword" class="form-group">
+						<label for="password2" class="cols-sm-2 control-label">Retype Password</label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+								<span class="input-group-addon"><i class="fa-lock fa-lg fa" aria-hidden="true"></i></span>
+								<input type="password" class="form-control" name="password2" value="" placeholder="Enter your password again"/>
+							</div>
+						</div>
+					</div>
 					<div class="form-group">
 						<button id="login-registerBtn" type="button" onclick="login()" class="btn btn-primary btn-lg btn-block login-button">Login</button>
 						<span id="registerStatus"></span>
@@ -49,9 +58,11 @@
 					</div>
 
 				</form>
+
 	    <script type="text/javascript">
 	    	$(document).ready(function () {
 	    		$("#theName").hide();
+	    		$("#registerPassword").hide();
 	    	})
 	    	function login() {
 				var form = document.getElementById('theForm');
@@ -66,76 +77,67 @@
 		            xmlHttp.onreadystatechange = function () {
 		                if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
 		                    response = JSON.parse(xmlHttp.responseText);
-		                    if (response.failure == null && form.username.value != "" && form.password.value != "") {
+		                    if (response.failure == null) {
 		                        var status = document.getElementById('loginStatus');
 		                        status.innerHTML = "";
 		                        setCookie('staffId',response.staffId,1);
 		                        window.location.href = "home";
 		                    } else {
-		                    	//form.username.value = "username";
-		                    	//form.password.value = "password";
-		                        //var status = document.getElementById('loginStatus');
-		                        //status.innerHTML = " Login Fail";
-		                       	alert("Login failed!");
-
+		                    	alert(response.message);
 		                    }
-		            }
-	            }
-	            xmlHttp.open("POST", endpoint, true);
-	            xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
-	            xmlHttp.send(JSON.stringify(data));
-	            return false;
-	        } else {
-	        	//form.username.value = "username";
-	        	//form.password.value = "password";
-	            //var status = document.getElementById('loginStatus');
-	            //status.innerHTML = " Login Fail";
-	            alert("Login failed!");
-
+		            	}
+	            	}
+		            xmlHttp.open("POST", endpoint, true);
+		            xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
+		            xmlHttp.send(JSON.stringify(data));
+		            return false;
+		        } else {
+	            	alert("Login failed! Invalid Input");
 	        	}
 			}
 	        function register() {
 			    var form = document.getElementById('theForm');
-	        	if (form.username.value != "" && form.password.value != "" && form.username.value != "username" && form.password.value != "password") {
-			        var endpoint = "http://localhost:8000/staff/register";
-			        var data = {
-			            username: form.username.value,
-			            password: form.password.value,
-			        };
+			    if (form.username.value != "" && form.password.value != "" && form.username.value != "username" && form.password.value != "password" && form.password2.value != "" && form.password2.value != "password") {
+			    	if (form.username.value.length == 8){
+			    		if (form.password.value == form.password2.value) {
+					        var endpoint = "http://localhost:8000/staff/register";
+					        var data = {
+					            username: form.username.value,
+					            password: form.password.value,
+					        };
 
-			        var xmlHttp = new XMLHttpRequest();
-			        xmlHttp.onreadystatechange = function () {
-			            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-			                response = JSON.parse(xmlHttp.responseText);
-			                if (response.failure == null) {
-			                    var status = document.getElementById('registerStatus');
-			                    status.innerHTML = "";
-			                    setCookie('staffId',response.id,1);
-			                    window.location.href = "home";
-			                } else {
-			                	//form.username.value = "username";
-			                	//form.password.value = "password";
-			                    //var status = document.getElementById('registerStatus');
-			                    //status.innerHTML = " Register Fail";
-			                    alert("Register failed!");
-			                }
+					        var xmlHttp = new XMLHttpRequest();
+					        xmlHttp.onreadystatechange = function () {
+					            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+					                response = JSON.parse(xmlHttp.responseText);
+					                if (response.hasOwnProperty('failure')){
+					                	alert(response.message);
+					                } else {
+					                    var status = document.getElementById('registerStatus');
+					                    status.innerHTML = "";
+					                    setCookie('staffId',response.id,1);
+					                    window.location.href = "home";
+					                }
+					            }
+					        }
+					        xmlHttp.open("POST", endpoint, true);
+					        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
+					        xmlHttp.send(JSON.stringify(data));
+					        return false;
+			        	} else {
+			                alert("Register failed! Password does not match!")
 			            }
+			        } else {
+			        	alert("Register failed! Username must be 8 character long!");
 			        }
-			        xmlHttp.open("POST", endpoint, true);
-			        xmlHttp.setRequestHeader("Content-Type","application/x-www-urlencoded");
-			        xmlHttp.send(JSON.stringify(data));
-			        return false;
-	        	} else {
-	            	//form.username.value = "username";
-	            	//form.password.value = "password";
-	                //var status = document.getElementById('registerStatus');
-	                //status.innerHTML = " Register Fail";
-	                alert("Register failed!");
-	            }
+			    } else {
+			    	alert("Register failed! Please Fill Input!");
+			    }
 	        }
 
 	        function makeToRegister() {
 	        	$("#theName").show();
+	        	$("#registerPassword").show();
 	        	$("#login-registerBtn").attr("onclick","register()");
 				$("#login-registerBtn").text("Register");
 				$(".login-register").attr("onclick", "makeToLogin()");
@@ -143,8 +145,8 @@
 	        }
 
 	        function makeToLogin() {
-	        	$("#theName").val("");
 	    		$("#theName").hide();
+	    		$("#registerPassword").hide();
 		    	$("#login-registerBtn").attr("onclick","login()");
 		    	$("#login-registerBtn").text("Login");
 		    	$(".login-register").attr("onclick", "makeToRegister()");

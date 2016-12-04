@@ -37,25 +37,8 @@
 	<hr>
 	<div id='participantListByCourse'><h4 align="center">List of Usernames:</h4></div>
 	<hr>
-</div><!--
-<h3>Search courses completed by:</h3>
-<form id='searchByParticipantForm'>
-	Participant: <input type='text' name='username' value='username'>
-	<input type='button' value='Search Courses' onclick='searchCourses()'>
-</form>
-<hr>
-<div id='courseListByParticipant'></div>
-<hr>
-<h3>Search participants who have completed:</h3>
-<form id='searchByCourseForm'>
-	Course: <select name='courses'>
-		<option value=''>Please choose a course</option>
-	</select>
-	<input type='button' value='Search Participants' onclick='searchParticipants()'>
-</form>
-<hr>
-<div id='participantListByCourse'></div>
--->
+</div>
+
 <script type='text/javascript'>
 
 	$(document).ready(function() {
@@ -71,8 +54,6 @@
 	        success(result,status,xhr) {              
 	            $.each(result.all_courses, function(index, value) {
 	                if (value.isPublished) {
-	                	//console.log(value.courseCode);
-	                	//console.log(value.title);
 	                    $('#searchByCourseForm select').append("<option value='" + value.courseCode + "'>" + value.courseCode + " : " + value.title + "</option>");                              
 	                }
 	            });
@@ -92,8 +73,7 @@
 	        type: 'GET',
 	        async: false,
 	        dataType: 'json',
-	        success(result,status,xhr) {
-	        	//console.log("The number is" + result.all_courses.length);              
+	        success(result,status,xhr) {             
 	            $.each(result.all_courses, function(index, value) {
 	                if (value.isPublished) {
 	                	arrayOfCourses[index] = value.courseCode + ": " + value.title;
@@ -102,14 +82,12 @@
 	            });
 	        }
 	    });
-	    //console.log(arrayOfCourses[0]);
-	    //console.log(arrayOfCourseIDs);
+	    
 	    var numRecords = arrayOfCourseIDs.length;
 		var form = document.getElementById('searchByParticipantForm');
 		if (form.username.value === "")
 			alert('Please type in a username');
 		else{
-			//console.log(form.username.value);
 			var i;
 			var output = "";
 			for (i = 0; i<numRecords;i++){
@@ -120,15 +98,11 @@
 					dataType: 'json',
 					success(result,status,xhr) {
 						var num = result.completed_enrolls.length;
-						//console.log(result.completed_enrolls.length);
 						var j;
 
 						for (j = 0; j<num;j++) {
-							//console.log(result.completed_enrolls[j].participant_info.username);
-							//console.log("This is the form value: " + form.username.value);
 
 							if(result.completed_enrolls[j].participant_info.username === form.username.value) {
-									//$("#courseListByParticipant").append("<p>"+arrayOfCourses[i]+"<p>");
 									output = output + "<tr><td>"+arrayOfCourses[i]+"</td><td>"+result.completed_enrolls[j].date_completed+"<td></tr>";
 							}
 						}

@@ -8,12 +8,7 @@
                     <a id="menu-toggle" href="#">Menu<span id="nav_label"><i id="nav_icon" class="fa-bars fa"></i></span></a></li>
             </ul>
             <ul id="theSidebar" class="sidebar">
-                <div id="permissionButtons">
-                    <!--<li><a>Participant<i class="sub_icon fa-graduation-cap fa"></i></a></li>
-                    <li><a>Instructor<i class="sub_icon fa-book fa"></i></a></li>
-                    <li><a>Human Resources<i class="sub_icon fa-area-chart fa"></i></a></li>
-                    <li><a>Administrator<i class="sub_icon fa-briefcase fa"></i></a></li>-->
-                </div>
+                <div id="permissionButtons"></div>
             </ul>
         </div>
     
@@ -48,17 +43,13 @@
         $.get("http://localhost:8000/staff/"+staffId+"/getStaffUsername",function(data, status){
             $.get("http://localhost:8000/staff/"+data.username+"/staffInfo",function(data, status){
                 $("#permissionButtons").append("<li><a onClick='updateDisplay(\"participant\")'>Participant<i class='sub_icon fa-graduation-cap fa'></i></a></li>");
-                //$("#permissionButtons").append("<button onClick='updateDisplay(\"participant\")'> Participant </button>");
                 if (data.instructor == true) {
-                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"instructor\")'> Instructor </button>");
                     $("#permissionButtons").append("<li><a onClick='updateDisplay(\"instructor\")'>Instructor<i class='sub_icon fa-book fa'></i></a></li>");
                 }
                 if (data.admin == true) {
-                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"administrator\")'> Administrator </button>");
                     $("#permissionButtons").append("<li><a onClick='updateDisplay(\"administrator\")'> Administrator<i class='sub_icon fa-briefcase fa'></i></a></li>");
                 }
                 if (data.hr == true) {
-                    //$("#permissionButtons").append("<button onClick='updateDisplay(\"hr\")'> Human Resource </button>");
                     $("#permissionButtons").append("<li><a onClick='updateDisplay(\"hr\")'>Human Resources<i class='sub_icon fa-area-chart fa'></i></a></li>");
                 }
                 $("#permissionButtons").append("<li><a onClick=\"logout()\">Log Out<i class='sub_icon fa-power-off fa'></i></a></li>");

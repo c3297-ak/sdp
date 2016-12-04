@@ -220,19 +220,22 @@ def login(request):
             decoded_body = request.body.decode('utf-8')
             post_data = json.loads(decoded_body)
 
-            staff = Staff.objects.all().filter(username=post_data['username'], password=post_data['password'])
+            staff = Staff.objects.all().filter(username=post_data['username'])
             if staff.count() > 0:
                 staff = staff[0]
-                return_data = dict()
-                return_data['staffId'] = staff.id
-                return_data['participant'] = True  # default
-                # check if instructor
-                if staff.instructor_set.count() > 0:
-                    return_data['instructor'] = True
-                if staff.administrator_set.count() > 0:
-                    return_data['administrator'] = True
-                if staff.humanresource_set.count() > 0:
-                    return_data['human_resource'] = True
+                if staff.password == post_data['password']:
+                    return_data = dict()
+                    return_data['staffId'] = staff.id
+                    return_data['participant'] = True  # default
+                    # check if instructor
+                    if staff.instructor_set.count() > 0:
+                        return_data['instructor'] = True
+                    if staff.administrator_set.count() > 0:
+                        return_data['administrator'] = True
+                    if staff.humanresource_set.count() > 0:
+                        return_data['human_resource'] = True
+                else:
+                    return_data = ERR_STAFF_INCORRECT_PASSWORD
             else:
                 return_data = ERR_STAFF_DOES_NOT_EXIST
         except Exception as e:

@@ -61,9 +61,8 @@
         </div>
     </div>
 
-    <!-- 1221 -->
     <div id="viewModules">
-        <h3 style="text-align: center"><a class='backToCourse' href='#'><b>Courses</a> | Modules</b></h3>
+        <h3 style="text-align: center"><b><a class='backToCourse' href='#'>Courses</a> | Modules</b></h3>
         <h4 style="text-align: left"><b>Module List</b></h4>
         <ul class='sortable' id="moduleList" style='list-style-type: none'></ul>
         <br>
@@ -103,9 +102,6 @@
                     </div>
                         <input type="button" class="btn btn-default" value='Update Module' onclick="updateModule()">
                 </div>
-                <!--Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
-                Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
-                <input type="button" value='Update Module' onclick="updateModule()">-->
             </form>
         </div>
 
@@ -119,117 +115,65 @@
                     </div>
                         <input type="button" class="btn btn-danger" value='Remove Module' onclick="removeModule()">
                 </div>
-                <!--Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
-                <input type="button" value='Remove Module' onclick="removeModule()">-->
             </form>
         </div>
 
     </div>
 
     <div id="viewComponents">
-        <h3 style="text-align:center"><a class='backToCourse' href='#'>Courses</a> | <a class='backToModule' href='#'>Modules</a> | Components</h3>
+        <h3 style="text-align:center"><b><a class='backToCourse' href='#'>Courses</a> | <a class='backToModule' href='#'>Modules</a> | Components</b></h3>
+        <h4 style="text-align:left"><b>Component List</b></h4>
         <ul class='sortable' id="componentList" style='list-style-type: none'></ul>
         
-        <h3 style="text-align:center">Content</h3>
-        <div id='componentContent'></div>
+        <div id='componentContent' style="margin-left: 40px;"></div>
+
+        <br>
+        <div id="roleOptions" class="row">
+            <div class="col-md-6"><button id="addComponentButton" class="btn btn-primary btn-block btn-lg">Add Component</button></div>
+            <div class="col-md-6"><button id="updateComponentButton" class="btn btn-block btn-lg">Update Component</button></div>
+        </div>
         
-        <h3 style="text-align:center">Add Component</h3>
-        <form id="addComponentForm">
-            <div class="container-fluid">
-                <div class="form-group">
-                    <label for="theOrder">Component Number:</label>
-                    <input type="text" class="form-control" name="order" placeholder="Enter Component Order" id="theOrder">
+        <div id="addComponentFormHolder">
+            <h3 id="addComponentFormHolderHeader" style="text-align:center"><b>Add Component</b></h3>
+            <form id="addComponentForm">
+                <div class="container-fluid">
+                    <div class="form-group">
+                        <label for="theOrder">Component Number:</label>
+                        <input type="text" class="form-control" name="order" placeholder="Enter Component Order" id="theOrder">
+                    </div>
+                    <div class="form-group">
+                        <label for="theContentType">Content Type:</label>
+                        <select class="form-control" name="contentType"><option value='text'>Text</option><option value='image'>Image</option><option value='file'>File</option><option value='video'>Video</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="theContentTitle">Content Title:</label>
+                        <input type="text" class="form-control" name="contentTitle" placeholder="Enter Content Title" id="theContentTitle">
+                    </div>
+                    <div id='textContent' class="form-group">
+                        <label for="theContent">Text Content:</label>
+                        <textarea class="form-control" rows='4' type="text" name="content" id="theContent"></textarea>
+                    </div>
+                    <div id='videoInput' class='form-group'>
+                        <label for="videoUrl">Video URL</label>
+                        <input type="text" class="form-control" name="url" placeholder="Enter Video URL" id='videoUrl'>
+                    </div>
+                    <div id='uploadField' class="form-group">
+                        <label for="fileUpload">File Upload:</label>
+                        <input name='upload' type="file">
+                    </div>
+                    <div id="addComponentFormButton">
+                        <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
+                    </div>
+                    <div id="updateComponentFormButton">
+                        <input type="button" class="btn btn-default" value='Update Component' onclick="updateComponent()">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="theContentType">Content Type:</label>
-                    <select name="contentType"><option value='text'>Text</option><option value='image'>Image</option><option value='file'>File</option><option value='video'>Video</option></select>
-                </div>
-                <div class="form-group">
-                    <label for="theContentTitle">Content Title:</label>
-                    <input type="text" class="form-control" name="contentTitle" placeholder="Enter Content Title" id="theContentTitle">
-                </div>
-                <div id='textContent' class="form-group">
-                    <label for="theContent">Text Content:</label>
-                    <textarea class="form-control" rows='4' type="text" name="content" id="theContent"></textarea>
-                </div>
-                <div id='videoInput' class='form-group'>
-                    <label for="videoUrl">Video URL</label>
-                    <input type="text" class="form-control" name="url" placeholder="Enter Video URL" id='videoUrl'>
-                </div>
-                <div id='uploadField' class="form-group">
-                    <label for="fileUpload">File Upload:</label>
-                    <input name='upload' type="file">
-                </div>
-                    <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
-                    <input type="button" class="btn btn-default" value='Update Component' onclick="updateComponent()">
-            </div>
-            <!--Order: <input type="text" name="order" placeholder="Component Order"> <br>
-            Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
-            Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
-            Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
-            <input type="button" value='Add Component' onclick="addComponent()">-->
-            <!--<input id='uploadedfile' type="file" placeholder="Upload file">
-            <button onclick="uploadFunc()"> Upload </button>
-            <button onclick="deleteFunc()"> Delete </button>
-            <a id="link" href="#"> The uploaded file </a>-->
-        </form>
+            </form>
+        </div>
+
     </div>
 
 </div>
-
-<!--
-<div id="viewModules">
-    <h3><a class='backToCourse' href='#'>Courses</a> / Modules</h3>
-    <ul class='sortable'></ul>
-
-    
-
-    <h3>Add Module</h3>
-    <form id="addModuleForm">
-        Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
-        Sequence Number: <input type="text" name="sequenceNumber" placeholder="Module Sequence Number"> <br>
-        <input type="button" value='Add Module' onclick="addModule()">
-    </form>
-
-    
-
-    <h3>Update Module</h3>
-    <form id="updateModule">
-        Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
-        Module Title: <input type="text" name="moduleTitle" placeholder="Module Title"> <br>
-        <input type="button" value='Update Module' onclick="updateModule()">
-    </form>
-
-    
-
-    <h3>Remove Module</h3>
-    <form id="removeModule">
-        Module Number: <input type="text" name="moduleNumber" placeholder="Module Number"> <br>
-        <input type="button" value='Remove Module' onclick="removeModule()">
-    </form>
-
-</div>-->
-<!--
-<div id="viewComponents">
-    <h3><a class='backToCourse' href='#'>Courses</a> / <a class='backToModule' href='#'>Modules</a> | Components</h3>
-    <ul class='sortable'></ul>
-    
-    <h3>Content</h3>
-    <div id='componentContent'></div>
-    
-    <h3>Add Component</h3>
-    <form id="addComponentForm">
-        Order: <input type="text" name="order" placeholder="Component Order"> <br>
-        Content Type: <input type="text" name="contentType" placeholder="Content Type"> <br>
-        Content Title: <input type="text" name="contentTitle" placeholder="Content Title"> <br>
-        Content: <textarea rows='4' cols='50' type="text" name="content" placeholder="Content"></textarea><br>
-        <input type="button" value='Add Component' onclick="addComponent()">
-        comment here <input id='uploadedfile' type="file" placeholder="Upload file">
-        <button onclick="uploadFunc()"> Upload </button>
-        <button onclick="deleteFunc()"> Delete </button>
-        <a id="link" href="#"> The uploaded file </a> end here
-    </form>
-</div>-->
 
 <script type="text/javascript">
 
@@ -332,6 +276,11 @@
         $('#viewComponents').show();
         $('#addCourseFormHolder').hide();
         $('#updateCourseFormHolder').hide();
+        $('#addComponentButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateComponentButton').attr('class', 'btn btn-block btn-lg');
+        $('#addComponentFormHolderHeader').html("<b>Add Component</b>");
+        $('#addComponentFormButton').show();
+        $('#updateComponentFormButton').hide();
     });
 
     $('#addComponentForm').on('change', 'select', function() {
@@ -394,7 +343,24 @@
         $('#updateModuleFormHolder').hide();
         $('#removeModuleFormHolder').show();
     });
-    // 1221
+
+    //*********************************
+    // View Component Page Buttons Logic
+    //*********************************
+    $('#addComponentButton').on('click',function(){
+        $('#addComponentButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateComponentButton').attr('class', 'btn btn-block btn-lg');
+        $('#addComponentFormHolderHeader').html("<b>Add Component</b>");
+        $('#addComponentFormButton').show();
+        $('#updateComponentFormButton').hide();
+    });
+    $('#updateComponentButton').on('click',function(){
+        $('#addComponentButton').attr('class', 'btn btn-block btn-lg');
+        $('#updateComponentButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#addComponentFormHolderHeader').html("<b>Update Component</b>");
+        $('#addComponentFormButton').hide();
+        $('#updateComponentFormButton').show();
+    });
 
 
     //*********************************
@@ -409,9 +375,9 @@
             dataType: 'json',
             success(result,status,xhr) {
                 $("#courseList").empty();
-                console.log(JSON.stringify(result))
                 var tableCode = "";
-                tableCode = "<table><thead><col width='350'><col width='50'><col width='50'><col width='50'></thead>"
+                var emptyCheck = true;
+                tableCode = "<table><thead><col width='350'><col width='50'><col width='50'><col width='50'><td><p style='font-size:18px; color:black'><b>My Course List</b></p></td><td></td><td></td><td></td></thead>"
                 $.each(result.course_list, function(index, value) {
                     tableCode = tableCode + "<tbody><td><p><a href='#' rel='" + value.courseCode + "' isPublished='"+value.isPublished+"'><b>" + value.courseCode + ": " + value.title + "</b></a><br><b>Category: </b>" + value.category + "<br><b>Description: </b>" + value.description + '</p></td>';
                     if(!value.isPublished) {
@@ -423,10 +389,14 @@
                         tableCode = tableCode + "<td></td>";
                         tableCode = tableCode + "<td></td></tbody>";
                     }
+                    emptyCheck = false;
 
                 });
                 tableCode = tableCode + "</table>"
                 $("#courseList").append(tableCode);
+                if (emptyCheck == true) {
+                    $("#courseList").append("No course created");
+                }
             }
         });
     }
@@ -434,10 +404,6 @@
     //add a course
     function addCourse() {
         var form = document.getElementById('addCourseForm');
-        console.log(form.courseCode.value);
-        console.log(form.category.value);
-        console.log(form.title.value);
-        console.log(form.description.value);
 
         $.ajax({
             url: 'http://localhost:8000/courses/addCourse',
@@ -618,7 +584,6 @@
                 $.each(IDs, function(index, value) {
                     IDs[index] = {"id":IDs[index],"sequenceNumber":+index};
                 });
-                console.log(IDs);
                 $.ajax({
                     url: 'http://localhost:8000/courses/' + thisCourse + '/update_module_order',
                     type: 'POST',
@@ -722,14 +687,18 @@
             success(result,status,xhr) {
                 $('#componentList').empty();
                 $('#componentContent').empty();
+                var emptyCheck = true;
                 $.each(result.modules, function(index, value) {
                     if (value.id == thisModuleId) {
                         $.each(value.components, function(index, data) {
-                            console.log(data);
                             $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "' relOrder='" + data.order + "' ral='" + data.contentType + "'><b>Component " + data.order + ": " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
+                            emptyCheck = false;
                         });
                     }
                 });
+                if (emptyCheck == true) {
+                    $('#componentList').append("No components added")
+                }
             }
         });
     }
@@ -744,8 +713,7 @@
                     cData[index] = {"contentType":input[0],"component_id":input[1], "order":index};
                 });
 
-                var data = JSON.stringify({"component_sequences": cData})
-                console.log(data);
+                var data = JSON.stringify({"component_sequences": cData});
 
                 $.ajax({
                     url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModule + '/update_component_order',
@@ -766,7 +734,6 @@
 
     //display component content
     $('#viewComponents').on('click','li a', function() {
-        console.log("View Component");
         var thisComponentId = $(this).attr('rel');
         var thisComponentOrder = $(this).attr('relOrder');
         var contentType = $(this).attr('ral');
@@ -776,28 +743,23 @@
             dataType: 'json',
             success(result,status,xhr) {
                 $('#componentContent').empty();
+                $('#componentContent').append('<p style="text-align:left"><b>Component Content</b></p>')
                 $.each(result.modules, function(index, value) {
                     if (value['id'] == thisModuleId){
-                        console.log("Chosen Module -> "+value['moduleTitle']);
                         $.each(value.components, function(index, data) {
                             if (data['order'] == thisComponentOrder) {
-                                console.log("Target Component -> "+thisComponentOrder);
-                                console.log("Chosen Component -> "+data['sequenceNumber']);
-                                console.log("Chosen Content Type -> "+contentType);
-                                console.log("Chosen Content -> "+data.content);
                                 if (contentType == 'text') {
-                                    $('#componentContent').append("<p>" + data.content + "</p>");
+                                    $('#componentContent').append("<span>" + data.content + "</span><br><div style='text-align:left'><button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button></div>");
                                 }
                                 else if (contentType == 'image') {
-                                    $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
+                                    $('#componentContent').append("<img width='40%' src='http://127.0.0.1:8000/uploads/" + data.content + "' class='img-responsive' style='text-align:center'><br><div style='text-align:center'><button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button></div>");
                                 }
                                 else if (contentType == 'video') {
-                                   $('#componentContent').append("<iframe width='560' height='315' src='" + data.content + "' frameborder='0' allowfullscreen></iframe>");
+                                   $('#componentContent').append("<div style='text-align:center'><iframe width='560' height='315' src='" + data.content + "' frameborder='0' allowfullscreen></iframe></div><br><div style='text-align:center'><button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button></div>");
                                 }
                                 else if (contentType == 'file') {
-                                    $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
+                                    $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a><br><div style='text-align:left'><button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button></div>");
                                 }
-                                $('#componentContent').append("<br><button rel='" + data.id + "' ral='" + contentType + "' type='button' class='btn btn-danger'>Remove This Component</button>");
                             }
                         });
                     }
@@ -890,15 +852,29 @@
     }
 
     function addComponent() {
+        $('#componentContent').empty();
         var form = document.getElementById('addComponentForm');
         var videoUrl = form.url.value.replace("watch?v=", "embed/");
-        console.log(videoUrl);
-        if (form.contentType.value == 'text')
+        if (form.contentType.value == 'text') {
             requestAddComponent(form.content.value);
-        else if (form.contentType.value == 'video')
+        }
+        else if (form.contentType.value == 'video') {
             requestAddComponent(videoUrl);
-        else
+        }
+        else {
             uploadFile();
+        }
+        
+        $('#addComponentButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateComponentButton').attr('class', 'btn btn-block btn-lg');
+        $('#addComponentFormHolderHeader').html("<b>Add Component</b>");
+        $('#addComponentFormButton').show();
+        $('#updateComponentFormButton').hide();
+
+        $('#uploadField').hide();
+        $('#videoInput').hide();
+        $('#textContent').show();
+
     }
             
 
@@ -916,13 +892,23 @@
                     if (value.sequenceNumber == thisModule)
                     $.each(value.components, function(index, data) {
                         if (data.order == thisComponentOrder) {
-                            removeComponent(data.id, contentType);
+                            removeComponent(data.id, data.contentType);
                             addComponent();
                         }
                     });
                 });
             }
         });
+
+        $('#addComponentButton').attr('class', 'btn btn-primary btn-block btn-lg');
+        $('#updateComponentButton').attr('class', 'btn btn-block btn-lg');
+        $('#addComponentFormHolderHeader').html("<b>Add Component</b>");
+        $('#addComponentFormButton').show();
+        $('#updateComponentFormButton').hide();
+        
+        $('#uploadField').hide();
+        $('#videoInput').hide();
+        $('#textContent').show();
     }
 </script>
 
