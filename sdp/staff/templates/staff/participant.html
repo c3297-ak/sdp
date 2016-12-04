@@ -8,7 +8,7 @@
     </div>
     
     <div id="viewCourses" class="row">
-        <h3>All Courses</h3>
+        <h3 style="text-align: center;"><b>All Courses</b></h3>
         <div id="courseList">
             <form id='filterByForm' class="form-inline">
                 <div class="col-md-12">
@@ -18,7 +18,7 @@
                             <option>All Categories</option>
                         </select>
                         <br>
-                        <p>Click for details:</p>
+                        <p>Notice: Click for details</p>
                         <div id="courseFilteredList"></div>
                         <!--<input class="btn btn-primary btn-block" type='button' onclick='searchParticipants()' value='Search'>-->
                     </div>
@@ -28,16 +28,17 @@
         <div id="courseDetails"></div>
     </div>
     <div id="viewEnrollment" class="row">
-        <h3 style="text-align: center;">My Enrollments</h3>
+        <h3 style="text-align: center;"><b>My Enrollments</b></h3>
         <div id="enrollmentList"></div>
         <div id="enrollmentDetails"></div>
         <div id="viewModules">
-            <ul id="moduleList"></ul>
-            <div id="proceedBtnDiv"></div>
+            <div id="viewModulesHeader"></div>
+            <ul id="moduleList" style='list-style-type: none'></ul>
+            <div id="proceedBtnDiv" style='margin-left: 40px'></div>
             <div id="viewComponents">
-                <ul id="componentList"></ul>
-                    <!--<h4 style="text-align:center">Component Content</h4>-->
-                    <div id="componentContent"></div>
+                <div id="viewComponentsHeader"></div>
+                <ul id="componentList" style='list-style-type: none'></ul>
+                    <div id="componentContent" style='margin-left: 40px'></div>
             </div>
         </div>
     </div>
@@ -239,11 +240,22 @@
             success(result,status,xhr){
                 $("#enrollmentList").empty();
                 console.log(JSON.stringify(result));
+                var htmlCode = "";
+                $("#enrollmentList").append("<table><thead><td><p style='font-size:20px; color:black'><b>Previous Enrollments</b></p></td></thead>");
                 $.each(result.course_list, function(index, value) {
-                    $("#enrollmentList").append("<p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");
-                    if(!value.isCompleted || value.isRetaking)
-                        $("#enrollmentList").append("<button type='button' class='btn btn-danger'rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop Course</button>");      
+                    if(!value.isCompleted || value.isRetaking) {
+                        // $("#enrollmentList").prepend("<p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'>" + value.courseCode + ": " + value.title + "</a><br> Progress: " + value.progress + " modules completed</p>");
+                        htmlCode = "<table><thead><col width='350'><col width='50'><td><p style='font-size:20px; color:black'><b>Current Enrollments</b></p></td><td></td></thead><tbody><td><p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'><b>" + value.courseCode + ": " + value.title + "</b></a><br> Progress: " + value.progress + " modules completed</p></td>" + "<td><button type='button' class='btn btn-danger'rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop Course</button></td></tbody></table>"+ htmlCode;
+                        // $("#enrollmentList").append("<button type='button' class='btn btn-danger'rel='" + value.courseCode + "' ral='" + value.progress + "'>Drop Course</button>");
+                    } else {
+                        $("#enrollmentList").append("<tbody><td><p><a href='#' rel='" + value.courseCode + "' ral='" + value.progress + "'><b>" + value.courseCode + ": " + value.title + "</b></a><br> Progress: " + value.progress + " modules completed</p></td></tbody>");
+                    }
                 });
+                $("#enrollmentList").append("</table>");
+                if (htmlCode == ""){
+                    htmlCode = "<table><thead><col width='350'><col width='50'><td><p style='font-size:20px; color:black'><b>Current Enrollments</b></p></td><td></td></thead><tbody><td>Not enrolled in any course</td>" + "<td></td></tbody></table>"
+                }
+                $("#enrollmentList").prepend(htmlCode+"<br>");  
             }
         });
     }
@@ -263,6 +275,9 @@
                 $('#componentList').empty();
         		$('#componentContent').empty();
                 $("#moduleList").empty();
+                $("#viewModulesHeader").empty();
+                //1234
+                $("#viewModulesHeader").append("<br><h4><b>Course Modules</b></h4>");
                 var count = 0;
                 $.each(result.modules, function(index, value) {
                     if (count <= progress) {
@@ -285,8 +300,8 @@
             dataType: 'json',
             success(result,status,xhr) {
                 $("#enrollmentDetails").empty();
-                $("#enrollmentDetails").append("<h3>Course Info</h3>");
-                $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br>Category: " + result.category_name + "<br>Instructor: " + result.instructor_info.username + "<br>Description: " + result.description + "<br>Number of Modules: " + result.module_count + "</p>");
+                $("#enrollmentDetails").append("<h3><b><u>Course Info</u></b></h3>");
+                $("#enrollmentDetails").append("<p><b>" + result.courseCode + ": " + result.title + "</b><br><b>Category: </b>" + result.category_name + "<br><b>Instructor: </b>" + result.instructor_info.username + "<br><b>Description: </b>" + result.description + "<br><b>Number of Modules: </b>" + result.module_count + "</p>");
             }
         });
     }
@@ -295,7 +310,10 @@
 
     function loadComponents() {
         $('#componentList').empty();
+        $('#viewComponentsHeader').empty();
         $('#componentContent').empty();
+        $('#viewComponentsHeader').append("<br><h4><b>Course Module Content</b></h4>");
+
         var flagC; //if the course is completed
         var flagD; //if the course is retaken
         $.ajax({
@@ -354,7 +372,7 @@
                             if(value.id == latestRel) {
 	                            $('#proceedBtnDiv').empty();
 	                            $('#proceedBtnDiv').show();
-	                            $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Next Module</button>");
+	                            $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Complete Module</button>");
 	                            //return false;
                         	}
                         }
@@ -372,7 +390,7 @@
                                 console.log("No, this executed!!");
                                 $('#proceedBtnDiv').empty();
                                 $('#proceedBtnDiv').show();
-                                $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Next Module</button>");
+                                $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Complete Module</button>");
                             	}
                             }
                             $.each(value.components, function(index, data) {
@@ -446,14 +464,14 @@
                                 console.log("Chosen Component -> "+data['order']);
                                 console.log("Chosen Content Type -> "+contentType);
                                 console.log("Chosen Content -> "+data.content);
-                                $("#componentContent").append("<h4 style='text-align:center;'>"+data.contentTitle+"</h4>");
+                                $("#componentContent").append("<br><h4 style='text-align:left;'><b>Component Selected: "+data.contentTitle+"</b></h4>");
                                 if (contentType == 'text')
                                     $('#componentContent').append("<p>" + data.content + "</p>");
                                 else if (contentType == 'image') {
-                                    $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "' class='img-responsive' style='text-align:center'>");
+                                    $('#componentContent').append("<img width='40%' src='http://127.0.0.1:8000/uploads/" + data.content + "' class='img-responsive' style='text-align:center'>");
                                 }
                                 else if (contentType == 'video')
-                                    $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
+                                    $('#componentContent').append("<video width='50%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
                                 else if (contentType == 'file')
                                     $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
                                     
@@ -463,10 +481,10 @@
                             console.log("this one");
                             $('#proceedBtnDiv').empty();
                             $('#proceedBtnDiv').show();
-                            $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Next Module</button>"); 
+                            $('#proceedBtnDiv').append("<button rel='" + value.id + "' type='button' class='btn btn-primary'>Complete Module</button>"); 
                         }*/
                     }
-                    //$('#moduleList').append("<button rel='" + value.id + "' ral='" + contentType + "' type='button' class='btn btn-primary'>Next Module</button>");
+                    //$('#moduleList').append("<button rel='" + value.id + "' ral='" + contentType + "' type='button' class='btn btn-primary'>Complete Module</button>");
                 });
             }
         });
@@ -488,7 +506,7 @@
                             $('#' + thisModuleId).append("<p>Component " + data.order + " : " + data.contentTitle + "<br>" + data.content + "</p>");
                         });
                     });
-                    $('#' + thisModuleId).append("<button type='button' class='btn btn-primary'>Next Modules</button>");
+                    $('#' + thisModuleId).append("<button type='button' class='btn btn-primary'>Complete Module</button>");
                 }
             });
         } else {
