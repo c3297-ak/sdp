@@ -315,6 +315,9 @@ def addModule(request, course_code):
             if already_exist_mod_seq:
                 return JsonResponse(ERR_MOD_ORDER_EXISTS)
 
+            if course.isPublished:
+                return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
+
             module = course.module_set.create(moduleTitle=post_data['moduleTitle'],
                                               sequenceNumber=post_data['sequenceNumber'])
             return_data = model_to_dict(module)  # create module and set the return_data to new module created
@@ -337,6 +340,9 @@ def update_module_content(request, course_code, module_seq):
         course = get_course(course_code)
         if not course:
             return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
+
+        if course.isPublished:
+            return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
 
         module = course.module_set.filter(sequenceNumber=module_seq)
         if module.count() == 0:
@@ -622,8 +628,8 @@ def remove_component(request, course_code, module_seq, component_id):
             return JsonResponse(ERR_COURSE_DOES_NOT_EXIST)
         course = course[0]
 
-        if course.isPublished:
-            return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
+        # if course.isPublished:
+        #    return JsonResponse(ERR_COURSE_ALREADY_PUBLISHED)
 
         module = course.module_set.filter(sequenceNumber=module_seq)
         if module.count() == 0:
