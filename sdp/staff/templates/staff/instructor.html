@@ -405,8 +405,8 @@
     function addCourse() {
         var form = document.getElementById('addCourseForm');
 
-        if (form.courseCode.value.indexOf(' ') > -1) {
-            alert("Course Code cannot have spaces");
+        if (form.courseCode.value.indexOf(' ') > -1|| form.courseCode.value.indexOf('`') > -1 || form.courseCode.value.indexOf('~') > -1 || form.courseCode.value.indexOf('!') > -1 || form.courseCode.value.indexOf('@') > -1 || form.courseCode.value.indexOf('#') > -1 || form.courseCode.value.indexOf('$') > -1 || form.courseCode.value.indexOf('%') > -1 || form.courseCode.value.indexOf('^') > -1 || form.courseCode.value.indexOf('&') > -1 || form.courseCode.value.indexOf('*') > -1 || form.courseCode.value.indexOf('(') > -1 || form.courseCode.value.indexOf(')') > -1 || form.courseCode.value.indexOf('-') > -1 || form.courseCode.value.indexOf('_') > -1 || form.courseCode.value.indexOf('+') > -1 || form.courseCode.value.indexOf('=') > -1 || form.courseCode.value.indexOf('[') > -1 || form.courseCode.value.indexOf(']') > -1 || form.courseCode.value.indexOf('|') > -1 || form.courseCode.value.indexOf('|') > -1 || form.courseCode.value.indexOf('\\') > -1 || form.courseCode.value.indexOf('"') > -1 || form.courseCode.value.indexOf('\'') > -1 || form.courseCode.value.indexOf(':') > -1 || form.courseCode.value.indexOf(';') > -1 || form.courseCode.value.indexOf('?') > -1 || form.courseCode.value.indexOf('/') > -1 || form.courseCode.value.indexOf('>') > -1 || form.courseCode.value.indexOf('<') > -1 || form.courseCode.value.indexOf(',') > -1 || form.courseCode.value.indexOf('.') > -1) {
+            alert("Course Code should only have letters and numbers");
         } else if (form.title.value == "") {
             alert("Please input title");
         } else if (form.description.value == "") {
@@ -445,8 +445,8 @@
     //update course
     function updateCourse() {
         var form = document.getElementById('updateCourseForm');
-        if (form.courseCode.value.indexOf(' ') > -1) {
-            alert("Course Code cannot have spaces");
+        if (form.courseCode.value.indexOf(' ') > -1|| form.courseCode.value.indexOf('`') > -1 || form.courseCode.value.indexOf('~') > -1 || form.courseCode.value.indexOf('!') > -1 || form.courseCode.value.indexOf('@') > -1 || form.courseCode.value.indexOf('#') > -1 || form.courseCode.value.indexOf('$') > -1 || form.courseCode.value.indexOf('%') > -1 || form.courseCode.value.indexOf('^') > -1 || form.courseCode.value.indexOf('&') > -1 || form.courseCode.value.indexOf('*') > -1 || form.courseCode.value.indexOf('(') > -1 || form.courseCode.value.indexOf(')') > -1 || form.courseCode.value.indexOf('-') > -1 || form.courseCode.value.indexOf('_') > -1 || form.courseCode.value.indexOf('+') > -1 || form.courseCode.value.indexOf('=') > -1 || form.courseCode.value.indexOf('[') > -1 || form.courseCode.value.indexOf(']') > -1 || form.courseCode.value.indexOf('|') > -1 || form.courseCode.value.indexOf('|') > -1 || form.courseCode.value.indexOf('\\') > -1 || form.courseCode.value.indexOf('"') > -1 || form.courseCode.value.indexOf('\'') > -1 || form.courseCode.value.indexOf(':') > -1 || form.courseCode.value.indexOf(';') > -1 || form.courseCode.value.indexOf('?') > -1 || form.courseCode.value.indexOf('/') > -1 || form.courseCode.value.indexOf('>') > -1 || form.courseCode.value.indexOf('<') > -1 || form.courseCode.value.indexOf(',') > -1 || form.courseCode.value.indexOf('.') > -1) {
+            alert("Course Code should only have letters and numbers");
         } else if (form.title.value == "") {
             alert("Please input title");
         } else if (form.description.value == "") {

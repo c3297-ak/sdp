@@ -213,22 +213,27 @@
 
 	function removeCategory() {
 		var input = document.getElementById('category_name');
-		$.ajax({
-			url: 'http://localhost:8000/courses/category/remove',
-			type: 'POST',
-			data: JSON.stringify({category_name : input.value}),
-			dataType: 'json',
-			beforeSend(xhr) {
-				xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-			},
-			success(result,status,xhr) {
-				if (result.hasOwnProperty('failure')){
-					alert(result.message);	
-				} else {
-					loadAllCategory();	
+		if (input.value == "Mergers and Acquisitions" || input.value == "Markets" || input.value == "Risk Management" || input.value == "Securities" || input.value == "Financial Modelling" || input.value == "Operations" || input.value == "Information Technology") {
+			alert("Remove Failed! Category '" + input.value + "' is a required category");
+		} else {
+			$.ajax({
+				url: 'http://localhost:8000/courses/category/remove',
+				type: 'POST',
+				data: JSON.stringify({category_name : input.value}),
+				dataType: 'json',
+				beforeSend(xhr) {
+					xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+				},
+				success(result,status,xhr) {
+					if (result.hasOwnProperty('failure')){
+						alert(result.message);	
+					} else {
+						loadAllCategory();	
+					}
 				}
-			}
-		});
+			});
+		}
+		
 	}
 
 	function loadAllCategory() {
