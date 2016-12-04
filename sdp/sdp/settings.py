@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +124,5 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(os.path.dirname(__file__), 'uploads')
 MEDIA_URL = '/uploads/'
+
+CORS_ORIGIN_ALLOW_ALL =True

@@ -144,9 +144,13 @@
                     <label for="theContent">Text Content:</label>
                     <textarea class="form-control" rows='4' type="text" name="content" id="theContent"></textarea>
                 </div>
-                <div id='uploadBtn' class="form-group">
+                <div id='videoInput' class='form-group'>
+                    <label for="videoUrl">Video URL</label>
+                    <input type="text" class="form-control" name="url" placeholder="Enter Video URL" id='videoUrl'>
+                </div>
+                <div id='uploadField' class="form-group">
                     <label for="fileUpload">File Upload:</label>
-                    <input id='uploadInput' type="file">
+                    <input name='upload' type="file">
                 </div>
                     <input type="button" class="btn btn-default" value='Add Component' onclick="addComponent()">
                     <input type="button" class="btn btn-default" value='Update Component' onclick="updateComponent()">
@@ -236,6 +240,10 @@
     $('#addCourseFormHolder').show();
     $('#updateCourseFormHolder').hide();
 
+    $('#uploadField').hide();
+    $('#videoInput').hide();
+    $('#textContent').show();
+
     //load categories for course creation form
     $.ajax({
         url: 'http://localhost:8000/courses/categories',
@@ -247,13 +255,6 @@
             });
         }
     });
-
-    //hide and show textarea or upload field depending of contentType
-    if ($('#addComponentForm select').val() == 'text') {
-        $('#textContent').show();
-        $('#uploadBtn').hide();
-    }
-
 
     //*********************************
     // PAGE CONTROL LOGIC
@@ -298,12 +299,19 @@
     });
 
     $('#addComponentForm').on('change', 'select', function() {
+        $('#uploadField input').val('');
         if ($('#addComponentForm select').val() == 'text') {
+            $('#uploadField').hide();
+            $('#videoInput').hide();
             $('#textContent').show();
-            $('#uploadBtn').hide();
+        } else if ($('#addComponentForm select').val() == 'video') {
+            $('#uploadField').hide();      
+            $('#textContent').hide();
+            $('#videoInput').show();
         } else {
             $('#textContent').hide();
-            $('#uploadBtn').show();
+            $('#videoInput').hide();
+            $('#uploadField').show();
         }
     });
 
@@ -566,6 +574,8 @@
                     alert(result.message);
                 else {
                     loadModules();
+                    form.moduleTitle.value = '';
+                    form.sequenceNumber.value = '';
                 }
             }
         });
@@ -587,6 +597,8 @@
                     alert(result.message);
                 else {
                     loadModules();
+                    form.moduleTitle.value = '';
+                    form.moduleNumber.value = '';
                 }
             }
         });
@@ -594,22 +606,26 @@
 
     //remove module
     function removeModule() {
-        var form = document.getElementById('removeModule');
-        $.ajax({
-            url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + form.moduleNumber.value + '/remove_module',
-            type: 'POST',
-            dataType: 'json',
-            beforeSend(xhr) {
-                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-            },
-            success(result,status,xhr) {
-                if (result.hasOwnProperty('failure'))
-                    alert(result.message);
-                else {
-                    loadModules();
+        cf = confirm('Please confirm that you would like to remove this module.')
+        if (cf) {
+            var form = document.getElementById('removeModule');
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + form.moduleNumber.value + '/remove_module',
+                type: 'POST',
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
+                        loadModules();
+                        form.moduleNumber.value = '';
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     //*********************************
@@ -627,6 +643,7 @@
                 $.each(result.modules, function(index, value) {
                     if (value.id == thisModuleId) {
                         $.each(value.components, function(index, data) {
+                            console.log(data);
                             $('#componentList').append("<li class='ui-state-default' id='"+data.contentType+"|"+data.id+"'><span class='ui-icon ui-icon-arrowthick-2-n-s'></span><a href='#' rel='" + data.id + "' relOrder='" + data.order + "' ral='" + data.contentType + "'><b>Component " + data.order + " : " + data.contentTitle + "</b></a><div id='" + data.id + "'></div></li>");
                         });
                     }
@@ -693,7 +710,7 @@
                                     $('#componentContent').append("<img width='60%' src='http://127.0.0.1:8000/uploads/" + data.content + "'>");
                                 }
                                 else if (contentType == 'video') {
-                                    $('#componentContent').append("<video width='60%' controls><source src='http://127.0.0.1:8000/uploads/" + data.content + "' type='video/mp4'>Your browser does not support HTML5 video.</video>");
+                                   $('#componentContent').append("<iframe width='560' height='315' src='" + data.content + "' frameborder='0' allowfullscreen></iframe>");
                                 }
                                 else if (contentType == 'file') {
                                     $('#componentContent').append("<a href='http://127.0.0.1:8000/uploads/" + data.content + "' download>Download File</a>");
@@ -738,9 +755,9 @@
 
     //upload file
     function uploadFile() {
-        var upload = document.getElementById('uploadInput');
+        var form = document.getElementById('addComponentForm');
         var form_data = new FormData();
-        form_data.append('upload', upload.files[0]);
+        form_data.append('upload', form.upload.files[0]);
 
         $.ajax({
             url: 'http://localhost:8000/courses/' + thisCourse + '/modules/' + thisModuleId + '/upload_component',
@@ -779,6 +796,12 @@
                     alert(result.message);
                 else {
                     loadComponents();
+                    form.order.value = '';
+                    form.contentTitle.value = '';
+                    form.contentType.value = 'text';
+                    form.content.value = '';
+                    form.url.value = '';
+                    form.upload.value = '';
                 }
             }
         });
@@ -786,11 +809,16 @@
 
     function addComponent() {
         var form = document.getElementById('addComponentForm');
-        if (form.contentType.value !== 'text')
-            uploadFile();
-        else
+        var videoUrl = form.url.value.replace("watch?v=", "embed/");
+        console.log(videoUrl);
+        if (form.contentType.value == 'text')
             requestAddComponent(form.content.value);
+        else if (form.contentType.value == 'video')
+            requestAddComponent(videoUrl);
+        else
+            uploadFile();
     }
+            
 
     function updateComponent() {
         var form = document.getElementById('addComponentForm');
@@ -813,7 +841,6 @@
                 });
             }
         });
-
     }
 </script>
 
