@@ -7,7 +7,6 @@ from django.db import models
 # Create your models here.
 # change 1 -
 from staff.models import Staff
-from embed_video.fields import EmbedVideoField
 from sdp.utilities import *
 
 
@@ -79,7 +78,6 @@ class ImageComponent(Component):
 
 class VideoComponent(Component):
     contentType = VIDEO
-    content = EmbedVideoField()
 
     def __str__(self):
         return 'Video component with order: '+ str(self.order)+ ' in module with id: '+ str(self.module.id)
