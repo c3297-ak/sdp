@@ -405,68 +405,84 @@
     function addCourse() {
         var form = document.getElementById('addCourseForm');
 
-        $.ajax({
-            url: 'http://localhost:8000/courses/addCourse',
-            type: 'POST',
-            data: JSON.stringify({
-                instructor: getCookie('staffId'),
-                courseCode: form.courseCode.value,
-                category: form.category.value,
-                isPublished: false,
-                title: form.title.value,
-                description: form.description.value
-            }),
-            dataType: 'json',
-            beforeSend(xhr) {
-                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-            },
-            success(result,status,xhr) {
-                if (result.hasOwnProperty('failure'))
-                    alert(result.message);
-                else {
-                    loadCourses();
-                    form.courseCode.value = "";
-                    form.category.value = "";
-                    form.title.value = "";
-                    form.description.value = "";
+        if (form.courseCode.value.indexOf(' ') > -1) {
+            alert("Course Code cannot have spaces");
+        } else if (form.title.value == "") {
+            alert("Please input title");
+        } else if (form.description.value == "") {
+            alert("Please input description");
+        } else {
+            $.ajax({
+                url: 'http://localhost:8000/courses/addCourse',
+                type: 'POST',
+                data: JSON.stringify({
+                    instructor: getCookie('staffId'),
+                    courseCode: form.courseCode.value,
+                    category: form.category.value,
+                    isPublished: false,
+                    title: form.title.value,
+                    description: form.description.value
+                }),
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
+                        loadCourses();
+                        form.courseCode.value = "";
+                        form.category.value = "";
+                        form.title.value = "";
+                        form.description.value = "";
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     //update course
     function updateCourse() {
         var form = document.getElementById('updateCourseForm');
-        $.ajax({
-            url: 'http://localhost:8000/courses/' + form.oldCourseCode.value + '/update_course_contents',
-            type: 'POST',
-            data: JSON.stringify({
-                new_courseCode: form.courseCode.value,
-                new_category: form.category.value,
-                new_title: form.title.value,
-                new_description: form.description.value
-            }),
-            dataType: 'json',
-            beforeSend(xhr) {
-                xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
-            },
-            success(result,status,xhr) {
-                if (result.hasOwnProperty('failure'))
-                    alert(result.message);
-                else {
-                    loadCourses();
-                    form.oldCourseCode.value = "";
-                    form.courseCode.value = "";
-                    form.category.value = "";
-                    form.title.value = "";
-                    form.description.value = "";
-                    $('#addCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
-                    $('#updateCourseButton').attr('class', 'btn btn-block btn-lg');
-                    $('#addCourseFormHolder').show();
-                    $('#updateCourseFormHolder').hide();
+        if (form.courseCode.value.indexOf(' ') > -1) {
+            alert("Course Code cannot have spaces");
+        } else if (form.title.value == "") {
+            alert("Please input title");
+        } else if (form.description.value == "") {
+            alert("Please input description");
+        } else {
+            $.ajax({
+                url: 'http://localhost:8000/courses/' + form.oldCourseCode.value + '/update_course_contents',
+                type: 'POST',
+                data: JSON.stringify({
+                    new_courseCode: form.courseCode.value,
+                    new_category: form.category.value,
+                    new_title: form.title.value,
+                    new_description: form.description.value
+                }),
+                dataType: 'json',
+                beforeSend(xhr) {
+                    xhr.setRequestHeader("Content-Type","application/x-www-urlencoded");
+                },
+                success(result,status,xhr) {
+                    if (result.hasOwnProperty('failure'))
+                        alert(result.message);
+                    else {
+                        loadCourses();
+                        form.oldCourseCode.value = "";
+                        form.courseCode.value = "";
+                        form.category.value = "";
+                        form.title.value = "";
+                        form.description.value = "";
+                        $('#addCourseButton').attr('class', 'btn btn-primary btn-block btn-lg');
+                        $('#updateCourseButton').attr('class', 'btn btn-block btn-lg');
+                        $('#addCourseFormHolder').show();
+                        $('#updateCourseFormHolder').hide();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     //publish a course

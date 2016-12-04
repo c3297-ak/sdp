@@ -467,6 +467,7 @@
                 });
             }
         });
+        var emptyCheck = true;
         $.ajax({
             url: 'http://localhost:8000/courses/',
             type: 'GET',
@@ -503,6 +504,9 @@
                     }
                                    
                 });
+                if ($('#courseFilteredList').is(':empty')) {
+                    $('#courseFilteredList').append("No available course")
+                }
             }
         });
     }
